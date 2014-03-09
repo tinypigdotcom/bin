@@ -17,8 +17,11 @@
 # Usage: $ . c n
 # where n is one of:
 #    b  cd $HOME/bin
-#    d  cd $HOME/Dropbox
 #    s  cd /some/arbitrarily/log/path/you/dont/want/to/type
+#    u  cd $HOME/utility
+
+# This needs to be set manually for sed to work.
+PROG=~/bin/c
 
 usage() {
       echo "Usage: $ . c n" >&2
@@ -29,17 +32,13 @@ p
 }' $PROG >&2
 }
 
-# Difficult to make PROG=$0 work because if this script is called correctly
-# with '.' then $0 will be bash or whatever the shell is
-PROG=/absolute/path/to/c
-
 lookup=$1
 
 cmd=
 case $lookup in
    b) cmd="cd $HOME/bin" ;;
-   d) cmd="cd $HOME/Dropbox" ;;
    s) cmd="cd /some/arbitrarily/log/path/you/dont/want/to/type" ;;
+   u) cmd="cd ~/utility" ;;
   "") usage;;
    *) echo "Not valid." >&2
       usage;;
