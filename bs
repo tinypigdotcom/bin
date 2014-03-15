@@ -1,0 +1,26 @@
+# This utility is probably a Bad Idea (tm)
+# The point of it is to use as a quick backup for if I am working on something
+# outside a repository and I want to make sure I don't lose it.
+# bs stands for "backup script" I swear.
+
+PROG=`basename $0`
+
+errout() {
+    echo "$PROG: $1" >&2
+    exit 1
+}
+
+FILE=$1
+if [ ! -f $FILE ]; then
+    errout "File \"$FILE\" not found."
+fi
+
+DIR=`dirname $FILE`
+BASE=`basename $FILE`
+
+cp $FILE ~/archive
+cd ~/archive
+git add $BASE
+git commit -m "archived"
+git push origin master
+
