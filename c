@@ -1,5 +1,5 @@
 # (c) 2014 David Bradford, Tinypig Computing
-# This is free software to do with as you wish
+# test commitThis is free software to do with as you wish
 
 # sHORTCUT change directory
 # ^this line is necessary to work with s (shortcuts) command
