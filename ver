@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+open I, "lsb_release -a 2>/dev/null |" or die "Can't: $!";
+
+my $description;
+my $codename;
+
+while(<I>) {
+    chomp;
+    if(/^Description:\s*(.*)/) {
+        $description=$1;
+    }
+    if(/^Codename:\s*(.*)/) {
+        $codename=$1;
+    }
+}
+
+close I;
+
+print qq{$description "$codename"\n};
+
+# Distributor ID: Ubuntu
+# Description:    Ubuntu 13.10
+# Release:    13.10
+# Codename:   saucy

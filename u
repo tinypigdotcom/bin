@@ -1,0 +1,26 @@
+
+usage() {
+      sed -n '/^  *[a-zA-Z0-9][a-zA-Z0-9]*)/ {
+s?^\(  *[a-zA-Z0-9][a-zA-Z0-9]*\)) *cmd="\(.*\)" *;;?\1  \2?
+p
+}' $0 >&2
+}
+
+lookup=$1
+shift
+
+case $lookup in
+   a) cmd="git add $*" ;;
+   l) cmd="ls -la $* | less";;
+   p) cmd="ps aux | grep $*" ;;
+   s) cmd="sudo su -" ;;
+   v) cmd="lsb_release -a" ;;
+   x) cmd="chmod +x $*" ;;
+  "") usage;;
+   *) echo "Not valid." >&2
+      usage;;
+esac
+
+echo $cmd >&2
+eval $cmd
+
