@@ -79,7 +79,7 @@ set softtabstop=4
 set t_vb=
 set title
 set tabstop=4
-set ul=0
+set undolevels=99
 set viminfo=%,'50,\"100,:100,n~/.viminfo
 set novisualbell
 set whichwrap=<,>,h,l
