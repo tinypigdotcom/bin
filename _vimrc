@@ -11,8 +11,10 @@
 " nobackup
 "         Last set from C:\Program Files\Vim\vimrc
 "
+" Help came from:
+" * Steve Losh - "Learn Vimscript the Hard Way"
+" * Eric Andreychek's .vimrc
 "
-" Lots of help from Eric Andreychek's .vimrc
 " Folding configuration
 ":set foldmethod=marker
 " Edit and uncomment next line if you want non-default marker
@@ -128,6 +130,22 @@ function! InsertTabWrapper(direction)
     else
         return "\<c-n>"
     endif
+endfunction
+
+" These are all just playing around vim functions:
+function DisplayName(name)
+    echom "Hello! My name is:"
+    echom a:name
+endfunction
+
+function Varg(...)
+  " if called via :call Varg("a","b")
+  " 2 (# of args)
+  echom a:0
+  " a (first arg)
+  echom a:1
+  " ['a', 'b'] (list of all args)
+  echo a:000
 endfunction
 
 "inoremap <S-tab> <c-r>=InsertTabWrapper ("backward")<cr>
