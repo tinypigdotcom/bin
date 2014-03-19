@@ -1,50 +1,78 @@
-# (c) 2014 David Bradford, Tinypig Computing
-# This is free software to do with as you wish
+#    "c" - a helper script for easily changing directory
+#    Copyright (C) 2014  David M. Bradford
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see https://www.gnu.org/licenses/gpl.txt
+#
+#    The author, David M. Bradford, can be contacted at:
+#    davembradford@gmail.com
+#
 
-# sHORTCUT change directory
-# ^this line is necessary to work with s (shortcuts) command
+# -------------------------- Data: map option letter to its associated command
+A="
 
-# "c" - my shorcut script for easy change directory.
-# Usage:
-# $ . c b
-# $ pwd
-# /home/dbradford/bin
-# $ . c s
-# $ pwd
-# /some/arbitrarily/log/path/you/dont/want/to/type
-# (enter c by itself to get a list of options)
-# $ c
-# Usage: $ . c n
-# where n is one of:
-#    b  cd $HOME/bin
-#    s  cd /some/arbitrarily/log/path/you/dont/want/to/type
-#    u  cd $HOME/utility
 
-# This needs to be set manually for sed to work.
-PROG=~/bin/c
+     b   cd $HOME/bin
+     s   cd /some/arbitrarily/log/path/you/dont/want/to/type
+     u   cd ~/sandbox
 
-usage() {
-      echo "Usage: $ . c n" >&2
-      echo "where n is one of:" >&2
-      sed -n '/^  *[a-zA-Z0-9][a-zA-Z0-9]*)/ {
-s?^\(  *[a-zA-Z0-9][a-zA-Z0-9]*\)) *cmd="\(.*\)" *;;?\1  \2?
-p
-}' $PROG >&2
-}
 
+"
+
+# -------------------------- Setup -------------------------------------------
+PROG=c
 lookup=$1
 
-cmd=
-case $lookup in
-   b) cmd="cd $HOME/bin" ;;
-   s) cmd="cd /some/arbitrarily/log/path/you/dont/want/to/type" ;;
-   u) cmd="cd ~/utility" ;;
-  "") usage;;
-   *) echo "Not valid." >&2
-      usage;;
-esac
+# -------------------------- Display usage function --------------------------
+usage() {
+    echo "Usage: $ . c n" >&2
+    echo "where n is one of:" >&2
+    i=0
+    while [  $i -lt ${#option[@]} ]; do
+        echo "    ${option[$i]}   ${cmd[$i]}" >&2
+        let i=i+1
+    done
+}
 
-if [ -n "$cmd" ]; then
-    echo $cmd >&2
-    eval $cmd
+# -------------------------- Read data into array ----------------------------
+let i=0
+option[0]=
+cmd[0]=
+while read a b
+do
+    if [ "x$a" == "x" ]; then
+        continue
+    fi
+    option[$i]="$a"
+    cmd[$i]="$b"
+    let i=i+1
+done < <(echo "$A" )
+
+# -------------------------- Search array for chosen option ------------------
+mycmd=
+i=0
+while [  $i -lt ${#option[@]} ]; do
+    if [ "$lookup" == ${option[$i]} ]; then
+        mycmd=${cmd[$i]}
+        break
+    fi
+    let i=i+1
+done
+
+if [ -n "$mycmd" ]; then
+    echo $mycmd >&2
+    eval $mycmd
+else
+    usage
 fi
+
