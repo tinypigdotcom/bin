@@ -88,7 +88,6 @@ do
     if [ "x$u_a" == "x" ]; then
         continue
     fi
-    echo "read $u_a $u_b"
     u_option[$u_i]="$u_a"
     u_cmd[$u_i]="$u_b"
     let u_i=u_i+1
