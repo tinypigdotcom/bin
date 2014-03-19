@@ -46,7 +46,6 @@ A="
      a  git add \$*
      b  git branch
      c  git commit -a
-    cl  git clone git@github.com:tinypigdotcom/utility.git
     cm  git commit -m \"\$*\"
      d  git checkout develop \$*
      m  git checkout master \$*
@@ -62,6 +61,22 @@ A="
 PROG=g
 lookup=$1
 shift
+
+# -------------------------- Create or read other commands from config file --
+if [ "x$HOME" != "x" ]; then
+    UTILITY_DIR=$HOME/.utility
+    CONFIG=$UTILITY_DIR/$PROG
+    if [ ! -d "$UTILITY_DIR" ]; then
+        mkdir $UTILITY_DIR
+    fi
+    if [ ! -f "$CONFIG" ]; then
+        echo "# example config for $PROG script" >$CONFIG
+        echo "$A" | sed -e 's/^/#/' >>$CONFIG
+    fi
+    if [ -r "$CONFIG" ]; then
+        B=`grep -v '^ *#' $HOME/.utility/$PROG 2>/dev/null`
+    fi
+fi
 
 # -------------------------- Display usage function --------------------------
 usage() {
@@ -86,7 +101,7 @@ do
     option[$i]="$a"
     cmd[$i]="$b"
     let i=i+1
-done < <(echo "$A" )
+done < <(echo "$B$A" | sort)
 
 # -------------------------- Search array for chosen option ------------------
 mycmd=

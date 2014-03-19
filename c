@@ -91,7 +91,7 @@ do
     u_option[$u_i]="$u_a"
     u_cmd[$u_i]="$u_b"
     let u_i=u_i+1
-done < <(echo "$u_CONFIG_DIRS$u_HERE_DIRS" )
+done < <(echo "$u_CONFIG_DIRS$u_HERE_DIRS" | sort )
 
 # -------------------------- Search array for chosen u_option ------------------
 u_my_cmd=
