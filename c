@@ -18,6 +18,25 @@
 #    davembradford@gmail.com
 #
 
+#    sHORTCUT change directory
+#    ^this line is necessary to work with s (shortcuts) command
+
+#    "c" - my shorcut script for easy change directory.
+#    Usage:
+#    $ . c b
+#    $ pwd
+#    /home/dbradford/bin
+#    $ . c s
+#    $ pwd
+#    /some/arbitrarily/log/path/you/dont/want/to/type
+#    (enter c by itself to get a list of options)
+#    $ c
+#    Usage: $ . c n
+#    where n is one of:
+#       b  cd $HOME/bin
+#       s  cd /some/arbitrarily/log/path/you/dont/want/to/type
+#       u  cd $HOME/utility
+
 # -------------------------- Data: map option letter to its associated command
 A="
 
