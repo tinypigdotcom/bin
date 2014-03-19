@@ -4,7 +4,7 @@
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    (at your u_option) any later version.
 #
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,7 +29,7 @@
 #    $ . c s
 #    $ pwd
 #    /some/arbitrarily/log/path/you/dont/want/to/type
-#    (enter c by itself to get a list of options)
+#    (enter c by itself to get a list of u_options)
 #    $ c
 #    Usage: $ . c n
 #    where n is one of:
@@ -37,61 +37,92 @@
 #       s  cd /some/arbitrarily/log/path/you/dont/want/to/type
 #       u  cd $HOME/utility
 
-# -------------------------- Data: map option letter to its associated command
-A="
+# -------------------------- Data: map u_option letter to its associated command
+u_HERE_DIRS="
 
 
      b   cd $HOME/bin
      s   cd /some/arbitrarily/log/path/you/dont/want/to/type
-     u   cd ~/sandbox
+     u   cd ~/.utility
 
 
 "
 
 # -------------------------- Setup -------------------------------------------
-PROG=c
-lookup=$1
+u_PROG=c
+u_lookup=$1
+
+# -------------------------- Create or read other directories from config file
+if [ "x$HOME" != "x" ]; then
+    u_UTILITY_DIR=$HOME/.utility
+    u_CONFIG=$u_UTILITY_DIR/$u_PROG
+    if [ ! -d "$u_UTILITY_DIR" ]; then
+        mkdir $u_UTILITY_DIR
+    fi
+    if [ ! -f "$u_CONFIG" ]; then
+        echo "# example config for $u_PROG script" >$u_CONFIG
+        echo "$u_HERE_DIRS" | sed -e 's/^/#/' >>$u_CONFIG
+    fi
+    if [ -r "$u_CONFIG" ]; then
+        u_CONFIG_DIRS=`grep -v '^ *#' $HOME/.utility/$u_PROG 2>/dev/null`
+    fi
+fi
 
 # -------------------------- Display usage function --------------------------
 usage() {
-    echo "Usage: $ . c n" >&2
+    echo "Usage: $ . $u_PROG n" >&2
     echo "where n is one of:" >&2
-    i=0
-    while [  $i -lt ${#option[@]} ]; do
-        echo "    ${option[$i]}   ${cmd[$i]}" >&2
-        let i=i+1
+    u_i=0
+    while [  $u_i -lt ${#u_option[@]} ]; do
+        echo "    ${u_option[$u_i]}   ${u_cmd[$u_i]}" >&2
+        let u_i=u_i+1
     done
 }
 
 # -------------------------- Read data into array ----------------------------
-let i=0
-option[0]=
-cmd[0]=
-while read a b
+let u_i=0
+u_option=( )
+u_cmd=( )
+while read u_a u_b
 do
-    if [ "x$a" == "x" ]; then
+    if [ "x$u_a" == "x" ]; then
         continue
     fi
-    option[$i]="$a"
-    cmd[$i]="$b"
-    let i=i+1
-done < <(echo "$A" )
+    echo "read $u_a $u_b"
+    u_option[$u_i]="$u_a"
+    u_cmd[$u_i]="$u_b"
+    let u_i=u_i+1
+done < <(echo "$u_CONFIG_DIRS$u_HERE_DIRS" )
 
-# -------------------------- Search array for chosen option ------------------
-mycmd=
-i=0
-while [  $i -lt ${#option[@]} ]; do
-    if [ "$lookup" == ${option[$i]} ]; then
-        mycmd=${cmd[$i]}
+# -------------------------- Search array for chosen u_option ------------------
+u_my_cmd=
+u_i=0
+while [  $u_i -lt ${#u_option[@]} ]; do
+    if [ "$u_lookup" == ${u_option[$u_i]} ]; then
+        u_my_cmd=${u_cmd[$u_i]}
         break
     fi
-    let i=i+1
+    let u_i=u_i+1
 done
 
-if [ -n "$mycmd" ]; then
-    echo $mycmd >&2
-    eval $mycmd
+if [ -n "$u_my_cmd" ]; then
+    echo $u_my_cmd >&2
+    eval $u_my_cmd
 else
     usage
 fi
+
+unset u_options
+unset u_a
+unset u_b
+unset u_CONFIG
+unset u_HERE_DIRS
+unset u_CONFIG_DIRS
+unset u_option
+unset u_cmd
+unset u_i
+unset u_my_cmd
+unset u_lookup
+unset u_UTILITY_DIR
+unset u_PROG
 
