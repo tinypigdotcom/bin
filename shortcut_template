@@ -18,7 +18,8 @@
 #    davembradford@gmail.com
 #
 
-#    sHORTCUT <TEMPLATE>issue git commands</TEMPLATE>
+#    s HORTCUT <TEMPLATE>issue git commands</TEMPLATE>
+#     ^<TEMPLATE>remove this space<TEMPLATE>
 #    ^this line is necessary to work with s (shortcuts) command
 
 # <TEMPLATE>
@@ -42,10 +43,10 @@
 # </TEMPLATE>
 
 # -------------------------- Data: map option letter to its associated command
+#     <TEMPLATE>
 A="
 
 
-     <TEMPLATE>
      a  git add \$*
      b  git branch
      c  git commit -a
@@ -57,10 +58,10 @@ A="
     pm  git push origin master \$*
      r  git checkout -b \$*
      s  git status -s \$*
-     </TEMPLATE>
 
 
 "
+#     </TEMPLATE>
 
 # -------------------------- Setup -------------------------------------------
 PROG=<TEMPLATE>g</TEMPLATE>
