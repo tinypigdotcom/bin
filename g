@@ -51,7 +51,7 @@ A="
      m  git checkout master \$*
     pd  git push origin develop \$*
     pm  git push origin master \$*
-     r  git checkout -b \$*
+     r  echo -n # git reset --hard HEAD
      s  git status -s \$*
 
 
