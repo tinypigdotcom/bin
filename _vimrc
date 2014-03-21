@@ -25,15 +25,17 @@ behave mswin
 
 set statusline=%f\ %=Current:\ %-4l\ Total:\ %-4L
 
+let loaded_matchparen = 1
+
 cnoremap jk <c-c>
-cnoremap <esc> <nop>
+"cnoremap <esc> <nop>
 inoremap jk <esc>
-inoremap <esc> <nop>
-noremap : ;
+"inoremap <esc> <nop>
+"noremap : ;
 noremap ; :
+nmap <space> <c-space>
 
 noremap z @a
-noremap <F2> :set invnumber
 
 ":noremap <F3> a:.,$s/^/          /
 noremap <F4> :close<CR>
@@ -67,11 +69,11 @@ set nocompatible
 set nohlsearch
 set noswapfile
 set nowritebackup
-set number
+set nonumber
 set ruler
 set scrolloff=3
 set shiftwidth=4
-set showmatch
+set noshowmatch
 set ignorecase
 set smartcase
 set smartindent
@@ -102,8 +104,14 @@ noremap <silent> <leader>f mxV'a>`x
 noremap <silent> <leader>p :retab<CR>:%s/\s\+$//<CR>
 noremap <silent> <leader>o :set noautoindent<CR>:set nosmartindent<CR>
 noremap <silent> <leader>q :close<CR>
-noremap <silent> <leader>s :!sort<CR>
+noremap <silent> <leader>s :rew<CR>
 noremap <silent> <leader>t :!perl -MText::Autoformat -eautoformat<CR>
+set guicursor=a:block-Cursor
+set guicursor+=a:blinkon0
+" set cursorline
+au GUIEnter * hi Cursor guibg=yellow
+au InsertLeave * hi Cursor guibg=red
+au InsertEnter * hi Cursor guibg=green
 
 " note that in order for MYVIMRC to be set correctly, it MATTERS where you
 " have put your vimrc file. Note in the following "system" vs "user":
@@ -115,7 +123,7 @@ noremap <silent> <leader>t :!perl -MText::Autoformat -eautoformat<CR>
 noremap <silent> <leader>v :e $MYVIMRC<CR>
 
 let g:vimwiki_list = [{'path': '~/vimwiki/', 'path_html': '~/public_html/'},
-    \ {'path': 'd:\dropbox\other\wiki' }]
+    \ {'path': 'c:\dropbox\other\wiki' }]
 
 "colorscheme darkblue
 colorscheme elflord
