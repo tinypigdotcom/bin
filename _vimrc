@@ -94,24 +94,21 @@ syntax on
 
 "inoremap # X#
 
-let mapleader = ','
-noremap <silent> <leader>a :make<CR>
-noremap <silent> <leader>b :!./%<CR>
-noremap <silent> <leader>C kmxjd'aGpmy:.,$s/^#//<CR>'ydG'xp
-noremap <silent> <leader>c kmxjd'aGpmy:.,$s/^/#/<CR>'ydG'xp
-noremap <silent> <leader>d mxV'a<`x
-noremap <silent> <leader>f mxV'a>`x
-noremap <silent> <leader>p :retab<CR>:%s/\s\+$//<CR>
+let mapleader = ';'
+noremap <silent> <leader>d :o $VIM\dc_vimrc<CR>
+noremap <silent> <leader>a mz:retab<CR>:%s/\s\+$//<CR>`z
 noremap <silent> <leader>o :set noautoindent<CR>:set nosmartindent<CR>
 noremap <silent> <leader>q :close<CR>
-noremap <silent> <leader>s :rew<CR>
-noremap <silent> <leader>t :!perl -MText::Autoformat -eautoformat<CR>
+noremap <silent> Q :q!<CR>
+noremap <silent> <leader>s :o c:\tusc\file\scratch.txt<CR>
 set guicursor=a:block-Cursor
 set guicursor+=a:blinkon0
 " set cursorline
 au GUIEnter * hi Cursor guibg=yellow
 au InsertLeave * hi Cursor guibg=red
 au InsertEnter * hi Cursor guibg=green
+" allow choice for font:
+" set guifont=*
 
 " note that in order for MYVIMRC to be set correctly, it MATTERS where you
 " have put your vimrc file. Note in the following "system" vs "user":
@@ -120,7 +117,7 @@ au InsertEnter * hi Cursor guibg=green
 " [...]
 "  system vimrc file: "$VIM\vimrc"
 "    user vimrc file: "$HOME\_vimrc"
-noremap <silent> <leader>v :e $MYVIMRC<CR>
+noremap <silent> <leader>v :e! $MYVIMRC<CR>
 
 let g:vimwiki_list = [{'path': '~/vimwiki/', 'path_html': '~/public_html/'},
     \ {'path': 'c:\dropbox\other\wiki' }]
@@ -160,4 +157,17 @@ endfunction
 "inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
 
 au GUIEnter * simalt ~x
+
+runtime plugin/dragvisuals.vim
+
+vmap  <expr>  <LEFT>   DVB_Drag('left')
+vmap  <expr>  <RIGHT>  DVB_Drag('right')
+vmap  <expr>  <DOWN>   DVB_Drag('down')
+vmap  <expr>  <UP>     DVB_Drag('up')
+vmap  <expr>  D        DVB_Duplicate()
+
+" Remove any introduced trailing whitespace after moving...
+let g:DVB_TrimWS = 0
+
+so $VIM\dc_vimrc
 
