@@ -43,16 +43,18 @@
 A="
 
 
-     a  git add \$*
-     b  git branch
-     c  git commit -a
-    cm  git commit -m \"\$*\"
-     d  git checkout develop \$*
-     m  git checkout master \$*
-    pd  git push origin develop \$*
-    pm  git push origin master \$*
-     r  echo -n # git reset --hard HEAD
-     s  git status -s \$*
+     a   git add \$*
+     b   git branch
+     c   git commit -a
+     ca  git commit -a -m \"\$*\"
+     cm  git commit -m \"\$*\"
+     d   git diff
+     de  git checkout develop \$*
+     m   git checkout master \$*
+     pd  git push origin develop \$*
+     pm  git push origin master \$*
+     r   echo -n # git reset --hard HEAD
+     s   git status -s \$*
 
 
 "
