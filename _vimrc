@@ -115,6 +115,7 @@ set guicursor=a:block-Cursor
 set guicursor+=a:blinkon0
 " set cursorline
 au GUIEnter * hi Cursor guibg=yellow
+"highlight CursorInverse   term=inverse
 au InsertLeave * hi Cursor guibg=red
 au InsertEnter * hi Cursor guibg=green
 au CursorHoldI * stopinsert
@@ -1294,8 +1295,8 @@ vmap <silent> # :call ToggleBlock()<CR>
 "=====[ Highlight cursor (plus row and column on request) ]===================
 
 " Inverse highlighting for cursor...
-highlight CursorInverse   term=inverse ctermfg=black ctermbg=white
-call matchadd('CursorInverse', '\%#', 100)
+"highlight CursorInverse   term=inverse ctermfg=black ctermbg=white
+"call matchadd('CursorInverse', '\%#', 100)
 
 " Need an invisible cursor column to make it update on every cursor move...
 highlight clear CursorColumn
