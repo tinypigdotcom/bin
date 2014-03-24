@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+use strict;
+use Data::Dumper;
+
+my $some_dir = '/cygdrive/c/TuSC/file';
+opendir(my $dh, $some_dir) || die "can't opendir $some_dir: $!";
+my @files = grep { /^\wl/ && -f "$some_dir/$_" } readdir($dh);
+closedir $dh;
+
+for my $file (@files) {
+    my @field = split /[_\.]/, $file;
+    open IN, "$some_dir/$file" or die "Can't open file $file: $!";
+    my $contents = join('',<IN>);
+    close IN;
+    $contents =~ s/[\x0a\x0d]//msg;
+    print "$field[2]/$field[3]/$field[1] $field[4]:$field[5]:$field[6]...$contents\n";
+}
+
+
