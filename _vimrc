@@ -89,15 +89,20 @@ set whichwrap=<,>,h,l
 set wildmenu
 set wildmode=list:longest,full
 
-"silent execute '!mkdir "'.$VIMRUNTIME.'/temp"'
-"silent execute '!del "'.$VIMRUNTIME.'/temp/*~"'
-set backupdir=$VIMRUNTIME/temp//
-set directory=$VIMRUNTIME/temp//
+silent execute '!mkdir "'.$HOME.'/temp"'
+silent execute '!del "'.$HOME.'/temp/*~"'
+set backupdir=$HOME/temp//
+set directory=$HOME/temp//
 
 filetype plugin on
-
 syntax on
 
+" Windows-specific commands can go here
+"if has("win32") || has("win16")
+"    syntax on
+"else
+"    syntax off
+"endif
 
 let mapleader = ';'
 noremap <silent> <leader>a mz:retab<CR>:%s/\s\+$//<CR>`z
@@ -740,19 +745,19 @@ function! Perldoc_impl (args)
 endfunction
 
 " Compile the list of installed Perl modules (and include the name under the cursor)...
-let s:module_files = readfile($HOME.'/.vim/perlmodules')
-function! CompletePerlModuleNames(prefix, cmdline, curpos)
-    let cfile = expand('<cfile>')
-    let prefix = a:prefix
-    if prefix == cfile
-        let prefix = ""
-    endif
-    if empty(prefix) && cfile =~ '^\w\+\(::\w\+\)*$'
-        return [cfile] + filter(copy(s:module_files), 'v:val =~ ''\c\_^' . prefix. "'")
-    else
-        return filter(copy(s:module_files), 'v:val =~ ''\c\_^' . prefix. "'")
-    endif
-endfunction
+"let s:module_files = readfile($HOME.'/.vim/perlmodules')
+"function! CompletePerlModuleNames(prefix, cmdline, curpos)
+"    let cfile = expand('<cfile>')
+"    let prefix = a:prefix
+"    if prefix == cfile
+"        let prefix = ""
+"    endif
+"    if empty(prefix) && cfile =~ '^\w\+\(::\w\+\)*$'
+"        return [cfile] + filter(copy(s:module_files), 'v:val =~ ''\c\_^' . prefix. "'")
+"    else
+"        return filter(copy(s:module_files), 'v:val =~ ''\c\_^' . prefix. "'")
+"    endif
+"endfunction
 
 
 " Handle Perl include files better...
