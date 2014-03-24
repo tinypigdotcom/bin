@@ -361,8 +361,8 @@ export HOSTFILE=$HOME/.hosts    # Put a list of remote hosts in ~/.hosts
 # -> Prevents accidentally clobbering files.
 alias mkdir='mkdir -p'
 
-alias h='history'
-alias j='jobs -l'
+alias hi='history'
+alias jo='jobs -l'
 alias which='type -a'
 alias ..='cd ..'
 
