@@ -28,6 +28,8 @@
 
 use Storable;
 use Cwd;
+use Data::Dumper;
+use File::Basename;
 
 my $PROG = $0;
 ($PROG) = ($PROG =~ m!.*/(.*)!);
@@ -58,6 +60,8 @@ my $infile = "$ENV{HOME}/.prc";
 #
 
 sub pfreeze {
+    die;
+    print Dumper($data);
     eval {
         store($data, "$infile");
     };
@@ -118,6 +122,22 @@ if( -r $infile) {
     $data = retrieve($infile);
 } else { $data = {} }
 init;
+
+($PROG eq 'zdir') && do {
+    my $key = $ARGV[0];
+
+    if($key) {
+        my $file = $files->{$key};
+        if($file) {
+            print dirname($file);
+        }
+        else {
+            print STDERR "Can't make sense of $key.\n";
+            print STDERR "It is a file you don't have read permission on, \n";
+            print STDERR "or labels that don't have associated files.\n";
+        }
+    }
+};
 
 ($PROG eq 'f' or $PROG eq 'fa') && do {
     my $na = scalar @ARGV;
