@@ -89,8 +89,10 @@ set whichwrap=<,>,h,l
 set wildmenu
 set wildmode=list:longest,full
 
-silent execute '!mkdir "'.$HOME.'/temp"'
-silent execute '!del "'.$HOME.'/temp/*~"'
+let required_dir = $HOME.'/temp'
+if !isdirectory(required_dir)
+    silent execute '!mkdir "'.required_dir.'"'
+endif
 set backupdir=$HOME/temp//
 set directory=$HOME/temp//
 
