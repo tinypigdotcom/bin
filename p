@@ -43,6 +43,7 @@ my $ident = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 my @ident = split //, $ident;
 my %ident;
 my $infile = "$ENV{HOME}/.prc";
+my $VERSION = '0.2';
 
 @ident{@ident} = (1) x scalar @ident;
 
@@ -354,7 +355,7 @@ $PROG eq 'p' && do {
 
 $PROG eq 'z' && do {
     print fix(<<"    EOF"), "\n";
-    Dave's Development System
+    Dave's Development System v$VERSION
     Help commands:
                    z  - this listing
     Organization commands:
