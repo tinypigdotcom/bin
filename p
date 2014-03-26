@@ -28,7 +28,6 @@
 
 use Storable;
 use Cwd;
-use Data::Dumper;
 use File::Basename;
 
 my $PROG = $0;
@@ -61,8 +60,6 @@ my $VERSION = '0.2';
 #
 
 sub pfreeze {
-    die;
-    print Dumper($data);
     eval {
         store($data, "$infile");
     };
