@@ -174,10 +174,10 @@ au GUIEnter * simalt ~x
 
 runtime plugin/dragvisuals.vim
 
-vmap  <expr>  <LEFT>   DVB_Drag('left')
-vmap  <expr>  <RIGHT>  DVB_Drag('right')
-vmap  <expr>  <DOWN>   DVB_Drag('down')
-vmap  <expr>  <UP>     DVB_Drag('up')
+vmap  <expr>  <C-LEFT>   DVB_Drag('left')
+vmap  <expr>  <C-RIGHT>  DVB_Drag('right')
+vmap  <expr>  <C-DOWN>   DVB_Drag('down')
+vmap  <expr>  <C-UP>     DVB_Drag('up')
 vmap  <expr>  D        DVB_Duplicate()
 
 " Remove any introduced trailing whitespace after moving...
@@ -772,10 +772,10 @@ execute 'set path+=' . substitute($PERL5LIB, ':', ',', 'g')
 
 
 "Adjust keyword characters to match Perlish identifiers...
-set iskeyword+=$
-set iskeyword+=%
-set iskeyword+=@
-set iskeyword-=,
+"set iskeyword+=$
+"set iskeyword+=%
+"set iskeyword+=@
+"set iskeyword-=,
 
 
 " Insert common Perl code structures...
@@ -1394,8 +1394,8 @@ vmap <silent> ;l !list2bullets<CR>
 let g:gundo_close_on_revert = 1
 
 " Use arrow keys to navigate...
-let g:gundo_map_move_older  =  "\<DOWN>"
-let g:gundo_map_move_newer  =  "\<UP>"
+let g:gundo_map_move_older  =  "\<C-DOWN>"
+let g:gundo_map_move_newer  =  "\<C-UP>"
 
 " No help required...
 let g:gundo_help = 0
@@ -1486,3 +1486,28 @@ function! SetZPHighlight ()
     endif
 endfunction
 
+function! VimwikiLinkHandler(link) "{{{ Use Vim to open links with the
+    " 'vlocal:' or 'vfile:' schemes.  E.g.:
+    "   1) [[vfile:///~/Code/PythonProject/abc123.py]], and
+    "   2) [[vlocal:./|Wiki Home]]
+    let link = a:link
+    if link =~ "vlocal:" || link =~ "vfile:"
+"      let link = link[1:]
+      let link = link
+    else
+      return 0
+    endif
+    let [idx, scheme, path, subdir, lnk, ext, url] =
+         \ vimwiki#base#resolve_scheme(link, 0)
+    if g:vimwiki_debug
+      echom 'LinkHandler: idx='.idx.', scheme=[v]'.scheme.', path='.path.
+           \ ', subdir='.subdir.', lnk='.lnk.', ext='.ext.', url='.url
+    endif
+    if url == ''
+      echom 'Vimwiki Error: Unable to resolve link!'
+      return 0
+    else
+      call vimwiki#base#edit_file('open', url, [], 0)
+      return 1
+    endif
+  endfunction " }}}
