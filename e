@@ -17,7 +17,11 @@ case $lookup in
        -h) usage;;
    --help) usage;;
        "") cmd="f 1" ;;
-        *) cmd="cd $HOME/bin; vim $lookup $*" ;;
+        *) if [ -f $HOME/bin2/$lookup ]; then
+               cmd="cd $HOME/bin2; vim $lookup $*"
+           else
+               cmd="cd $HOME/bin; vim $lookup $*"
+           fi;;
 esac
 
 echo $cmd >&2
