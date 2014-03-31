@@ -58,7 +58,7 @@ export PATH=$PATH:$HOME/bin:$HOME/bin2
 
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
-  echo "("${ref#refs/heads/}")"
+  echo "("${ref#refs/heads/}") "
 }
 
 PS1="\w \$(parse_git_branch)\$ "
@@ -323,7 +323,7 @@ case ${TERM} in
         # PWD (with 'disk space' info):
         PS1=${PS1}"\[\$(disk_color)\]\W\[${NC}\] "
         # git branch, if any:
-        PS1=${PS1}"\[\$(parse_git_branch)\]]\[${NC}\] "
+        PS1=${PS1}"\$(parse_git_branch)]\[${NC}\] "
         # Prompt (with 'job' info):
         PS1=${PS1}"\[\$(job_color)\]>\[${NC}\] "
         # Set title of current xterm:

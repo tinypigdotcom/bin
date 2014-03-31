@@ -55,6 +55,7 @@ A="
      pm  git push origin master \$*
      r   echo -n # git reset --hard HEAD
      s   git status -s \$*
+     v   git checkout develop \$*
 
 
 "

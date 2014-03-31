@@ -622,7 +622,7 @@ set noshowmode                      "Suppress mode change messages
 
 set updatecount=10                  "Save buffer every 10 chars typed
 
-set textwidth=78                    "Wrap at column 78
+set textwidth=0                     "NO! Wrap at column 78
 
 " Keycodes and maps timeout in 3/10 sec...
 set timeout timeoutlen=300 ttimeoutlen=300
