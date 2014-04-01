@@ -20,6 +20,8 @@
 " Edit and uncomment next line if you want non-default marker
 ":set foldmarker={{{,}}}
 ":syntax enable
+"
+" David Bradford's .vimrc VERSION=apricot
 
 behave mswin
 
@@ -35,7 +37,7 @@ inoremap jk <esc>
 noremap ; :
 nmap <space> <c-space>
 
-noremap z @a
+map z @az
 
 ":noremap <F3> a:.,$s/^/          /
 noremap <F4> :close<CR>
@@ -99,6 +101,28 @@ set directory=$HOME/temp//
 filetype plugin on
 syntax on
 
+"colorscheme neverland
+"colorscheme neverland-darker
+"colorscheme zenburn
+"colorscheme blue
+"colorscheme darkblue
+"colorscheme default
+"colorscheme delek
+"colorscheme desert
+"colorscheme elflord
+"colorscheme evening
+"colorscheme koehler
+"colorscheme morning
+"colorscheme murphy
+"colorscheme pablo
+"colorscheme peachpuff
+"colorscheme ron
+"colorscheme shine
+"colorscheme slate
+colorscheme torte
+"colorscheme zellner
+
+
 " Windows-specific commands can go here
 "if has("win32") || has("win16")
 "    syntax on
@@ -135,9 +159,6 @@ noremap <silent> <leader>v :e! $MYVIMRC<CR>
 
 let g:vimwiki_list = [{'path': '~/vimwiki/', 'path_html': '~/public_html/'},
     \ {'path': 'c:\dropbox\other\wiki' }]
-
-"colorscheme darkblue
-colorscheme elflord
 
 " Mmmmm... tab completetion
 function! InsertTabWrapper(direction)
@@ -200,7 +221,7 @@ autocmd BufNewFile,BufRead  *.t   setfiletype perl
 
 "=====[ Comments are important ]==================
 
-highlight Comment term=bold ctermfg=white
+"highlight Comment term=bold ctermfg=white
 
 
 "=====[ Enable Nmap command for documented mappings ]================
@@ -1301,29 +1322,29 @@ vmap <silent> # :call ToggleBlock()<CR>
 "call matchadd('CursorInverse', '\%#', 100)
 
 " Need an invisible cursor column to make it update on every cursor move...
-highlight clear CursorColumn
-highlight CursorColumn term=none cterm=none
-set cursorcolumn
+"highlight clear CursorColumn
+"highlight CursorColumn term=none cterm=none
+"set cursorcolumn
 
 " Toggle cursor row highlighting on request...
-highlight CursorLine   term=bold ctermfg=black ctermbg=cyan  cterm=bold
-Nmap <silent> ;r [Toggle cursor line highlighting] :set cursorline!<CR>
+"highlight CursorLine   term=bold ctermfg=black ctermbg=cyan  cterm=bold
+"Nmap <silent> ;r [Toggle cursor line highlighting] :set cursorline!<CR>
 
 " Toggle cursor column highlighting on request...
-Nmap <silent> ;c [Toggle cursor row highlighting] :silent call Toggle_CursorColumn('flip')<CR>
+"Nmap <silent> ;c [Toggle cursor row highlighting] :silent call Toggle_CursorColumn('flip')<CR>
 
 " Implement cursor toggle...
-let g:cursorcolumn_visible = 0
-function! Toggle_CursorColumn (requested_state)
-    if a:requested_state == 'off' || g:cursorcolumn_visible && a:requested_state == 'flip'
-        let g:cursorcolumn_visible = 0
-        highlight clear CursorColumn
-        highlight CursorColumn term=none cterm=none
-    else
-        let g:cursorcolumn_visible = 1
-        highlight CursorColumn term=bold ctermfg=black ctermbg=cyan cterm=bold
-    endif
-endfunction
+"let g:cursorcolumn_visible = 0
+"function! Toggle_CursorColumn (requested_state)
+"    if a:requested_state == 'off' || g:cursorcolumn_visible && a:requested_state == 'flip'
+"        let g:cursorcolumn_visible = 0
+"        highlight clear CursorColumn
+"        highlight CursorColumn term=none cterm=none
+"    else
+"        let g:cursorcolumn_visible = 1
+"        highlight CursorColumn term=bold ctermfg=black ctermbg=cyan cterm=bold
+"    endif
+"endfunction
 
 "=====[ Highlight spelling errors on request ]===================
 
@@ -1511,3 +1532,4 @@ function! VimwikiLinkHandler(link) "{{{ Use Vim to open links with the
       return 1
     endif
   endfunction " }}}
+
