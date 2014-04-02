@@ -2,19 +2,123 @@
 
 use strict;
 use Data::Dumper;
+use DateTime;
+use DateTime::Duration;
+use DateTime::Format::Duration;
+
+my $dfd = DateTime::Format::Duration->new(
+        pattern => '%H:%M:%S',
+        normalize => 1
+);
+
+my ($junk,$junk,$junk,$current_day,$current_month,$current_year,$junk,$junk,$junk) = localtime(time);
+
+$current_month = sprintf("%02d", $current_month + 1);
+$current_day   = sprintf("%02d", $current_day );
+$current_year += 1900;
 
 my $some_dir = '/cygdrive/c/TuSC/file';
 opendir(my $dh, $some_dir) || die "can't opendir $some_dir: $!";
 my @files = grep { /^\wl/ && -f "$some_dir/$_" } readdir($dh);
 closedir $dh;
 
+my $previous_work_item='begin';
+print "$current_month/$current_day/$current_year 10:00:00...begin\n";
+
+my $previous_dt = DateTime->new(
+    year    => $current_year,
+    month   => $current_month,
+    day     => $current_day,
+    hour    => 10,
+    minute  => 00,
+    second  => 00,
+    time_zone => 'floating',
+);
+
+my $total_worked;
+sub duration_add {
+    my ($item_total, $plus) = @_;
+    dur_add(\$total_worked,$plus);
+    dur_add($item_total,$plus);
+}
+
+sub dur_add {
+    my ($item_total, $plus) = @_;
+
+    if(${$item_total}) {
+        ${$item_total} += ${$plus};
+    }
+    else {
+        ${$item_total} = ${$plus};
+    }
+}
+
+my %wi;
+my $item_dt;
+my $dur;
 for my $file (@files) {
     my @field = split /[_\.]/, $file;
+    my $item_month  = $field[2];
+    my $item_day    = $field[3];
+    my $item_year   = $field[1];
+    my $item_hour   = $field[4];
+    my $item_minute = $field[5];
+    my $item_second = $field[6];
+
     open IN, "$some_dir/$file" or die "Can't open file $file: $!";
-    my $contents = join('',<IN>);
+    my $work_item = join('',<IN>);
     close IN;
-    $contents =~ s/[\x0a\x0d]//msg;
-    print "$field[2]/$field[3]/$field[1] $field[4]:$field[5]:$field[6]...$contents\n";
+
+    $work_item =~ s/[\x0a\x0d]//msg;
+    if ( $current_month == $item_month and
+         $current_day   == $item_day   and
+         $current_year  == $item_year  and
+         $work_item ne $previous_work_item ) {
+
+        $item_dt = DateTime->new(
+            year    => $item_year,
+            month   => $item_month,
+            day     => $item_day,
+            hour    => $item_hour,
+            minute  => $item_minute,
+            second  => $item_second,
+            time_zone => 'floating',
+        );
+
+        $dur = $item_dt - $previous_dt;
+        duration_add(\$wi{$previous_work_item},\$dur);
+
+        $previous_dt = $item_dt;
+
+#        print $dur->hours . ':' . $dur->minutes . ':' . $dur->seconds . "\n";
+
+        print "$item_month/$item_day/$item_year $item_hour:$item_minute:$item_second...$work_item\n";
+
+        $previous_work_item = $work_item;
+    }
 }
+
+$item_dt = DateTime->new(
+    year    => $current_year,
+    month   => $current_month,
+    day     => $current_day,
+    hour    => 18,
+    minute  => 00,
+    second  => 00,
+    time_zone => 'floating',
+);
+
+$dur = $item_dt - $previous_dt;
+duration_add(\$wi{$previous_work_item},\$dur);
+
+print "$current_month/$current_day/$current_year 18:00:00...end\n\n";
+
+for my $key (keys %wi) {
+#    printf "%02d:%02d:%02d %-40s\n", $work_item{$key}->hours, $work_item{$key}->minutes, $work_item{$key}->seconds, $key;
+    print $dfd->format_duration($wi{$key}), " $key\n";
+}
+
+print "-----------------------------------------------------------------\n";
+print $dfd->format_duration($total_worked), " TOTAL\n";
 
 
