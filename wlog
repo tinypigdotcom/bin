@@ -11,7 +11,15 @@ my $dfd = DateTime::Format::Duration->new(
         normalize => 1
 );
 
-my ($junk,$junk,$junk,$current_day,$current_month,$current_year,$junk,$junk,$junk) = localtime(time);
+my ($current_seconds,
+    $current_minutes,
+    $current_hour,
+    $current_day,
+    $current_month,
+    $current_year,
+    $junk,
+    $junk,
+    $junk) = localtime(time);
 
 $current_month = sprintf("%02d", $current_month + 1);
 $current_day   = sprintf("%02d", $current_day );
@@ -102,16 +110,16 @@ $item_dt = DateTime->new(
     year    => $current_year,
     month   => $current_month,
     day     => $current_day,
-    hour    => 18,
-    minute  => 00,
-    second  => 00,
+    hour    => $current_hour,
+    minute  => $current_minutes,
+    second  => $current_seconds,
     time_zone => 'floating',
 );
 
 $dur = $item_dt - $previous_dt;
 duration_add(\$wi{$previous_work_item},\$dur);
 
-print "$current_month/$current_day/$current_year 18:00:00...end\n\n";
+print "$current_month/$current_day/$current_year $current_hour:$current_minutes:$current_seconds...end\n\n";
 
 for my $key (keys %wi) {
 #    printf "%02d:%02d:%02d %-40s\n", $work_item{$key}->hours, $work_item{$key}->minutes, $work_item{$key}->seconds, $key;
