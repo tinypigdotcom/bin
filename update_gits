@@ -1,0 +1,11 @@
+find /cygdrive -type d -name .git | while read a
+do
+    echo $a
+    echo ===============
+    cd $a/..
+    git status -s
+    git pull
+    echo
+    echo
+    echo
+done
