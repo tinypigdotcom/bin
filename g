@@ -49,7 +49,6 @@ A="
      ca  git commit -a -m \"\$*\"
      cm  git commit -m \"\$*\"
      d   git diff
-     de  git checkout develop \$*
      m   git checkout master \$*
      pd  git push origin develop \$*
      pm  git push origin master \$*
