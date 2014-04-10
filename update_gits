@@ -1,11 +1,32 @@
+SKIPFILE=upd_skip
 find /cygdrive -type d -name .git | while read a
 do
-    echo $a
-    echo ===============
     cd $a/..
-    git status -s
-    git pull
+
+    if [ -f $SKIPFILE ]; then
+        echo "(skipping $a)"
+        continue
+    fi
+
+    status=$(git status -s 2>&1)
+    status_status=$?
+    pull=$(git pull 2>&1)
+    pull_status=$?
+
+
+    if [[ $pull =~ No\ remote\ repository\ specified ]] ; then
+        touch $SKIPFILE
+        echo "(skipping $a)"
+        continue
+    fi
+
     echo
+    echo $a
+    echo -------------------------------------------------------
+    if [ -n "$status" ]; then
+        echo $status
+    fi
+    echo $pull
     echo
-    echo
+
 done
