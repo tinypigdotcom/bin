@@ -24,9 +24,9 @@ do
     echo $a
     echo -------------------------------------------------------
     if [ -n "$status" ]; then
-        echo $status
+        echo "$status"
     fi
-    echo $pull
+    echo "$pull"
     echo
 
 done
