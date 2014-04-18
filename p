@@ -60,10 +60,21 @@ my $VERSION = '0.2';
 #
 
 sub pfreeze {
+    envwrite();
     eval {
         store($data, "$infile");
     };
     print "Error writing to file: $@" if $@;
+}
+
+sub envwrite {
+    open O, ">$ENV{HOME}/.penv" or die;
+    for("a" .. "z", "A" .. "Z") {
+        print O "export $_=$files->{$_}\n";
+    }
+    for(keys %$files) {
+        print O qq{echo "$_=$files->{$_}"\n};
+    }
 }
 
 sub fix {
