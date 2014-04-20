@@ -1,7 +1,7 @@
 SKIPFILE=upd_skip
 find /cygdrive -type d -name .git | while read a
 do
-    cd $a/..
+    cd "$a/.."
 
     if [ -f $SKIPFILE ]; then
         echo "(skipping $a)"
