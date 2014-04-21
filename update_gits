@@ -13,6 +13,9 @@ do
     pull=$(git pull 2>&1)
     pull_status=$?
 
+    push=$(git push origin master 2>&1)
+    push_status=$?
+
 
     if [[ $pull =~ No\ remote\ repository\ specified ]] ; then
         touch $SKIPFILE
@@ -27,6 +30,7 @@ do
         echo "$status"
     fi
     echo "$pull"
+    echo "$push"
     echo
 
 done
