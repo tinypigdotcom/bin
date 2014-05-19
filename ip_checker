@@ -1,0 +1,18 @@
+set -x
+UTIL=~/.utility
+FILE=$UTIL/ip_address
+FILE1=$UTIL/ip_address1
+DROPFILE=~/Dropbox_info/${HOSTNAME}_ip
+/cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1
+
+if [ -f "$FILE" -a -f "$FILE1" ]; then
+    if cmp $FILE $FILE1; then
+        :
+    else
+        cp $FILE1 $FILE
+        cp $FILE1 $DROPFILE
+        rm $FILE1
+    fi
+else
+    cp $FILE1 $FILE
+fi
