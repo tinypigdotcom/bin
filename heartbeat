@@ -1,0 +1,3 @@
+set -x
+DROPFILE=~/Dropbox_info/${HOSTNAME}_heartbeat
+date >$DROPFILE
