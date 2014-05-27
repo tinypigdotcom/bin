@@ -1,9 +1,16 @@
+# inet addr:192.168.1.166  Bcast:192.168.1.255  Mask:255.255.255.0
+
 set -x
 UTIL=~/.utility
 FILE=$UTIL/ip_address
 FILE1=$UTIL/ip_address1
 DROPFILE=~/Dropbox_info/${HOSTNAME}_ip
-/cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1
+
+if [ -d /cygdrive ]; then
+    /cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1
+else
+    ifconfig -a | perl -ne '/Bcast/ && s/\D*([\d\.]+).*/$1/ && print' <ifconfig.txt
+fi
 
 if [ -f "$FILE" -a -f "$FILE1" ]; then
     if cmp $FILE $FILE1; then
@@ -16,3 +23,4 @@ if [ -f "$FILE" -a -f "$FILE1" ]; then
 else
     cp $FILE1 $FILE
 fi
+
