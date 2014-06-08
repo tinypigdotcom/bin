@@ -1,6 +1,6 @@
 # test update without push
 SKIPFILE=upd_skip
-find /cygdrive -type d -name .git | while read a
+find / -type d -name .git 2>/dev/null | while read a
 do
     cd "$a/.."
 
