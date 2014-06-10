@@ -9,7 +9,7 @@ DROPFILE=~/Dropbox_info/${HOSTNAME}_ip
 if [ -d /cygdrive ]; then
     /cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1
 else
-    ifconfig -a | perl -ne '/Bcast/ && s/\D*([\d\.]+).*/$1/ && print' <ifconfig.txt
+    ifconfig -a | perl -ne '/Bcast/ && s/\D*([\d\.]+).*/$1/ && print' >$FILE1
 fi
 
 if [ -f "$FILE" -a -f "$FILE1" ]; then
