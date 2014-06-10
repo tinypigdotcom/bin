@@ -7,17 +7,13 @@ p - Dave's Project / File Manager
 =head1 SYNOPSIS
 
     $ p d "My Vimfiles"
-
     $ p
     Projects:
     * d          My Vimfiles
 
     $ f v .vimrc
-
     $ f c .vim/colors/vividchalk.vim
-
     $ f b .bash_profile
-
     $ f
     Project: d (My Vimfiles)
     Current files:
@@ -25,32 +21,27 @@ p - Dave's Project / File Manager
     v .vimrc                                             /home/dbradford
     c vividchalk.vim                                     /home/dbradford/.vim/colors
 
-    $ f b
+    $ f b # edit file assigned to "b" with vim
 
-    $ fa
+    $ fa  # edit all files in project with vim
 
     $ p m "My New Module"
-
     $ p
     Projects:
-
       d          My Vimfiles
     * m          My New Module
 
     $ f d DMB/lib/DMB.pm
-
     $ f t DMB/t/DMB.t
-
     $ f
     Project: m (My New Module)
     Current files:
     d DMB.pm                                             /home/dbradford/tmp/DMB/lib
     t DMB.t                                              /home/dbradford/tmp/DMB/t
 
-    $ d t
+    $ d t # cd to directory containing file represented by "t"
 
     $ x t "d m;make test"
-
     $ x t
     PERL_DL_NONLAZY=1 /usr/bin/perl.exe "-MExtUtils::Command::MM"
     "-MTest::Harness" "-e" "undef *Test::Harness::Switches; test_harness(0,
@@ -70,7 +61,6 @@ p - Dave's Project / File Manager
     Files=1, Tests=1,  0 wallclock secs ( 0.02 usr  0.02 sys +  0.01 cusr
     0.06 csys =  0.11 CPU)
     Result: PASS
-
 
     $ v
     d=/home/dbradford/tmp/DMB/lib/DMB.pm
