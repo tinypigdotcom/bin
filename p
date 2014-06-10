@@ -1,30 +1,120 @@
 #!/usr/bin/perl
 
-# put "p" in your path and then create links in the same directory to:
-# 'f'
-# 'fa'
-# 'x'
-# 'xa'
-# 'z'
+=head1 NAME
 
-###############################################################################
-# $Id: p,v 1.1.1.1 2010-10-30 03:23:16 Dave Exp $
-#
-# File: p
-#
-# Author: David Bradford, USinternetworking, Inc.
-#
-#
-# Purpose: To provide shortcuts for editing files and executing commands
-#
-#
-# Notes:
-#
-#
-#
-###############################################################################
-# TODO
-# refine code.
+p - Dave's Project / File Manager
+
+=head1 SYNOPSIS
+
+    $ p d "My Vimfiles"
+
+    $ p
+    Projects:
+    * d          My Vimfiles
+
+    $ f v .vimrc
+
+    $ f c .vim/colors/vividchalk.vim
+
+    $ f b .bash_profile
+
+    $ f
+    Project: d (My Vimfiles)
+    Current files:
+    b .bash_profile                                      /home/dbradford
+    v .vimrc                                             /home/dbradford
+    c vividchalk.vim                                     /home/dbradford/.vim/colors
+
+    $ f b
+
+    $ fa
+
+    $ p m "My New Module"
+
+    $ p
+    Projects:
+
+      d          My Vimfiles
+    * m          My New Module
+
+    $ f d DMB/lib/DMB.pm
+
+    $ f t DMB/t/DMB.t
+
+    $ f
+    Project: m (My New Module)
+    Current files:
+    d DMB.pm                                             /home/dbradford/tmp/DMB/lib
+    t DMB.t                                              /home/dbradford/tmp/DMB/t
+
+    $ d t
+
+    $ x t "d m;make test"
+
+    $ x t
+    PERL_DL_NONLAZY=1 /usr/bin/perl.exe "-MExtUtils::Command::MM"
+    "-MTest::Harness" "-e" "undef *Test::Harness::Switches; test_harness(0,
+    'blib/lib', 'blib/arch')" t/*.t
+    t/DMB.t .. ok
+    All tests successful.
+    Files=1, Tests=1,  0 wallclock secs ( 0.05 usr  0.02 sys +  0.05 cusr
+    0.03 csys =  0.14 CPU)
+    Result: PASS
+
+    $ xa
+    PERL_DL_NONLAZY=1 /usr/bin/perl.exe "-MExtUtils::Command::MM"
+    "-MTest::Harness" "-e" "undef *Test::Harness::Switches; test_harness(0,
+    'blib/lib', 'blib/arch')" t/*.t
+    t/DMB.t .. ok
+    All tests successful.
+    Files=1, Tests=1,  0 wallclock secs ( 0.02 usr  0.02 sys +  0.01 cusr
+    0.06 csys =  0.11 CPU)
+    Result: PASS
+
+
+    $ v
+    d=/home/dbradford/tmp/DMB/lib/DMB.pm
+    m=/home/dbradford/tmp/DMB/Makefile
+    t=/home/dbradford/tmp/DMB/t/DMB.t
+
+    $ cat $t >>$d
+
+=head1 DESCRIPTION
+
+Dave's Project / File Manager is designed to make managing sets of files easier. Files can be grouped into projects and then each file can be accessed with a simple command: f [space][letter representing file] [ENTER]
+
+=head1 INSTALLATION
+
+Put "p" in your C<$PATH> and then create links to p in the same directory as:
+
+  f     # file edit
+  fa    # edit all files
+  x     # execute command
+  xa    # execute all commands
+  z     # get help
+  zdir  # get directory of file
+
+Separate scripts, put somewhere in C<$PATH>
+  d     # change to file directory
+  v     # set shell variables for file shortcuts
+
+Add the following lines to your C<.bash_profile>:
+  alias d='. d'
+  alias v='. v'
+
+=head1 AUTHOR
+
+David M. Bradford, E<lt>davembradford@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2014 by David M. Bradford
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.14.2 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
 
 use Storable;
 use Cwd;
@@ -392,3 +482,4 @@ $PROG eq 'z' && do {
     Current project: $data->{'current'}
     EOF
 };
+
