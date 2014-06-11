@@ -1,3 +1,4 @@
 set -x
-DROPFILE=~/Dropbox_info/${HOSTNAME}_heartbeat
+h=$(/bin/hostname)
+DROPFILE=~/Dropbox_info/${h}_heartbeat
 date >$DROPFILE
