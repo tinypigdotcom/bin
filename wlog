@@ -21,6 +21,11 @@ my ($current_seconds,
     $junk,
     $junk) = localtime(time);
 
+# To manually set day
+#$current_minutes=0;
+#$current_hour=18;
+#$current_day=26;
+
 if($ARGV[0] eq '-y') {
     $current_minutes=0;
     $current_hour=18;
