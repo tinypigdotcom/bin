@@ -1,8 +1,13 @@
 #!/usr/bin/perl
 
-=head1 NAME
+# put "p" in your path and then create links in the same directory to:
+# 'f'
+# 'fa'
+# 'x'
+# 'xa'
+# 'z'
 
-p - Dave's Project / File Manager
+# p - Dave's Project / File Manager
 
 =head1 SYNOPSIS
 
@@ -109,15 +114,31 @@ at your option, any later version of Perl 5 you may have available.
 use Storable;
 use Cwd;
 use File::Basename;
+use Clone qw(clone);
+use Data::Dumper;
+
+use strict;
+use warnings;
+no warnings 'uninitialized'; # just for now
 
 my $PROG = $0;
 ($PROG) = ($PROG =~ m!.*/(.*)!);
 
-if($ARGV[0] eq '--help' or $ARGV[0] eq '-?' or $ARGV[0] eq '-h') {
-    $PROG='z';
+if(defined $ARGV[0]) {
+    if($ARGV[0] eq '--help' or $ARGV[0] eq '-?' or $ARGV[0] eq '-h') {
+        $PROG='z';
+    }
+    elsif($ARGV[0] eq '-c') {
+        shift @ARGV;
+        $PROG='cp';
+    }
+    elsif($ARGV[0] eq '-m') {
+        shift @ARGV;
+        $PROG='mv';
+    }
 }
 
-my ($current, %data, $files);
+my ($current, $data, $cmds, $files);
 my $ident = '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 my @ident = split //, $ident;
 my %ident;
@@ -126,18 +147,21 @@ my $VERSION = '0.2';
 
 @ident{@ident} = (1) x scalar @ident;
 
-# structure of data (totally out of date and therefore useless):
+# structure of data
 #################################################################
-#$data = { 'projects' => { 'blah' => { 'label'    => 'This describes the project',
-#                                      'files'    => { 1 => '/tmp/a.dmb',
-#                                                      2 => '/home/dbradfor/bin/blah.pl' },
-#                                      'commands' => { 1 => 'echo',
-#                                                      2 => 'cat /tmp/a.dmb' }
-#                                    }
-#                        },
-#          'current'  => 'blah'
+#$VAR1 = { 'current' => 't',
+#          'projects' => { 'pa' => { 'files' => { 'a' => '/home/dbradford/t3s/api_test.pl',
+#                                                 'o' => '/home/dbradford/bin/onetime',
+#                                                 'U' => '/opt/manfred/lib/Manfred/SimmCreate.pm' },
+#                                    'commands' => { 'a' => { 'cmd' => '/home/dbradford/t3s/api_test.sh',
+#                                                             'label' => '' },
+#                                                    't' => { 'cmd' => './api_post.sh',
+#                                                             'label' => '' } },
+#                                    'label' => 'Manfred Test Gauntlet (TM)'
+#                                  },
+#                          'pad' => {etc},
+#                        }
 #        };
-#
 
 sub pfreeze {
     envwrite();
@@ -150,10 +174,14 @@ sub pfreeze {
 sub envwrite {
     open O, ">$ENV{HOME}/.penv" or die;
     for("a" .. "z", "A" .. "Z") {
-        print O "export $_=$files->{$_}\n";
+        my $file = $files->{$_};
+        $file //= '';
+        print O "export $_=$file\n";
     }
     for(keys %$files) {
-        print O qq{echo "$_=$files->{$_}"\n};
+        my $file = $files->{$_};
+        $file //= '';
+        print O qq{echo "$_=$file"\n};
     }
 }
 
@@ -165,7 +193,6 @@ sub fix {
     }
     return $i;
 }
-
 
 sub init {
     $current = $data->{current};
@@ -203,7 +230,7 @@ sub fullpath {
 
 sub derange {
     my ($pattern,$hashref) = @_;
-    $pattern =~ s/(.)-(.)/&{sub{@b=@_;my $a;for($b[0]..$b[1]){$a.=$_ if$hashref->{$_}};return $a}}($1,$2)/eg;
+    $pattern =~ s/(.)-(.)/&{sub{my @b=@_;my $a;for($b[0]..$b[1]){$a.=$_ if$hashref->{$_}};return $a}}($1,$2)/eg;
     return $pattern;
 }
 
@@ -211,6 +238,23 @@ if( -r $infile) {
     $data = retrieve($infile);
 } else { $data = {} }
 init;
+
+($PROG eq 'cp') && do {
+    my ($from,$to) = @ARGV;
+    $data->{projects}->{$to} = clone($data->{projects}->{$from});
+    $data->{current} = $to;
+    $PROG = 'f'; @ARGV=();
+    pfreeze;
+};
+
+($PROG eq 'mv') && do {
+    my ($from,$to) = @ARGV;
+    $data->{projects}->{$to} = clone($data->{projects}->{$from});
+    delete $data->{projects}->{$from};
+    $data->{current} = $to;
+    $PROG = 'f'; @ARGV=();
+    pfreeze;
+};
 
 ($PROG eq 'zdir') && do {
     my $key = $ARGV[0];
@@ -225,6 +269,35 @@ init;
             print STDERR "It is a file you don't have read permission on, \n";
             print STDERR "or labels that don't have associated files.\n";
         }
+    }
+};
+
+$PROG eq 'p' && do {
+    my $arg = $ARGV[0];
+    $arg //= '';
+    my ($cmd,$proj) = ( $arg =~ /(.)(.*)/ );
+    if( defined $cmd && $cmd eq '-' ) {
+        if( $proj eq $current ) {
+            print STDERR "Can't remove current project.\n";
+        } else {
+            delete $data->{projects}->{$proj};
+            pfreeze;
+        }
+    } elsif(!$arg) {
+        print "Projects:\n";
+        for(sort keys %{$data->{projects}}) {
+            print(($_ eq $current) ? '*' : ' ');
+            my $label = $data->{projects}->{$_}->{label};
+            $label //= '';
+            printf " %-10s %-15s\n", $_, $label;
+        }
+    } else {
+        $data->{current} = $arg;
+        $data->{projects}->{$arg}->{label} = $ARGV[1] if($ARGV[1]);
+        init;
+        @ARGV = ();
+        $PROG = 'f'; @ARGV=();
+        pfreeze;
     }
 };
 
@@ -267,7 +340,7 @@ init;
             print STDERR "Invalid identifier: $x[0]\n";
             print STDERR "Use one of: @ident\n";
         }
-    } elsif( $x[0] eq ',' ) {                                 # Add files to generic label
+    } elsif( defined $x[0] && $x[0] eq ',' ) {                # Add files to generic label
         shift @x;
         for(@x) {
             my ($file) = fullpath($_);
@@ -287,7 +360,9 @@ init;
         if( $na != 0 ) {
             print STDERR "Bad arguments.\n";
         }
-        print "Project: $current ($data->{projects}->{$current}->{label})\n";
+        my $label = $data->{projects}->{$current}->{label};
+        $label //= '';
+        print "Project: $current ($label)\n";
         print "Current files:\n";
 
         my %sorted;
@@ -305,31 +380,6 @@ init;
     }
 };
 
-$PROG eq 'p' && do {
-    my $arg = $ARGV[0];
-    my ($cmd,$proj) = ( $arg =~ /(.)(.*)/ );
-    if( $cmd eq '-' ) {
-        if( $proj eq $current ) {
-            print STDERR "Can't remove current project.\n";
-        } else {
-            delete $data->{projects}->{$proj};
-            pfreeze;
-        }
-    } elsif(!$arg) {
-        print "Projects:\n";
-        for(sort keys %{$data->{projects}}) {
-            print(($_ eq $current) ? '*' : ' ');
-            printf " %-10s %-15s\n", $_, $data->{projects}->{$_}->{label};
-        }
-    } else {
-        $data->{current} = $arg;
-        $data->{projects}->{$arg}->{label} = $ARGV[1] if($ARGV[1]);
-        init;
-        @ARGV = ();
-        f;
-        pfreeze;
-    }
-};
 
 ($PROG eq 'x' or $PROG eq 'xa') && do {
     my $na = scalar @ARGV;
@@ -402,6 +452,7 @@ $PROG eq 'p' && do {
                 print STDERR "or labels that don't have associated files.\n";
             } elsif(!$f1) {
                 for(@l) {
+                    print "$cmds->{$_}->{cmd} $f\n";
                     if(system("/bin/sh -c '$cmds->{$_}->{cmd} $f'")) {
                         print STDERR "An error occurred while running: $cmds->{$_}->{cmd}\n";
                         last;
@@ -472,4 +523,3 @@ $PROG eq 'z' && do {
     Current project: $data->{'current'}
     EOF
 };
-
