@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-#
 
 # put "p" in your path and then create links in the same directory to:
 # 'f'
@@ -245,6 +244,7 @@ init;
     $data->{projects}->{$to} = clone($data->{projects}->{$from});
     $data->{current} = $to;
     $PROG = 'f'; @ARGV=();
+    init;
     pfreeze;
 };
 
@@ -254,6 +254,7 @@ init;
     delete $data->{projects}->{$from};
     $data->{current} = $to;
     $PROG = 'f'; @ARGV=();
+    init;
     pfreeze;
 };
 
