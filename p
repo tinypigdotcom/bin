@@ -119,7 +119,7 @@ use Data::Dumper;
 
 use strict;
 use warnings;
-no warnings 'uninitialized'; # just for now
+#no warnings 'uninitialized'; # might as well learn they are there now
 
 my $PROG = $0;
 ($PROG) = ($PROG =~ m!.*/(.*)!);
