@@ -116,7 +116,7 @@ at your option, any later version of Perl 5 you may have available.
 =cut
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 
 use Clone qw(clone);
 use Cwd;
@@ -124,73 +124,27 @@ use Data::Dumper;
 use File::Basename;
 use Storable;
 use YAML qw(LoadFile DumpFile);
+use Hash::Util qw(lock_keys);
 
-my $PROG = $0;
-($PROG) = ( $PROG =~ m!.*/(.*)! );
-
-if ( defined $ARGV[0] ) {
-    if ( $ARGV[0] eq '--help' or $ARGV[0] eq '-?' or $ARGV[0] eq '-h' ) {
-        $PROG = 'z';
-    }
-    elsif ( $PROG eq 'p' ) {
-        if ( $ARGV[0] eq 'cp' or $ARGV[0] eq 'mv' ) {
-            $PROG = shift @ARGV;
-        }
-    }
-}
-
-my ( $current, $data, $cmds, $files );
-
-my $legacy_infile = "$ENV{HOME}/.prc";
-my $infile        = "$ENV{HOME}/.pyaml";
-my $VERSION       = '0.2';
-
-my @ident = ( 0 .. 9, 'a' .. 'z', 'A' .. 'Z' );
-
-my %ident;
-
-@ident{@ident} = (1) x @ident;
-
-if ( -e $infile ) {
-    $data = LoadFile($infile);
-}
-elsif ( -r $legacy_infile ) {
-    $data = retrieve($legacy_infile);
-}
-else { $data = {} }
-init();
-
-# structure of data
-#################################################################
-#$VAR1 = { 'current' => 't',
-#          'projects' => { 'pa' => { 'files' => { 'a' => '/home/dbradford/t3s/api_test.pl',
-#                                                 'o' => '/home/dbradford/bin/onetime',
-#                                                 'U' => '/opt/manfred/lib/Manfred/SimmCreate.pm' },
-#                                    'commands' => { 'a' => { 'cmd' => '/home/dbradford/t3s/api_test.sh',
-#                                                             'label' => '' },
-#                                                    't' => { 'cmd' => './api_post.sh',
-#                                                             'label' => '' } },
-#                                    'label' => 'Manfred Test Gauntlet (TM)'
-#                                  },
-#                          'pad' => {etc},
-#                        }
-#        };
+exit main( $0, @ARGV );
 
 sub pfreeze {
+    my ($g) = @_;
     envwrite();
-    eval { DumpFile( $infile, $data ); };
+    eval { DumpFile( $g->{infile}, $g->{data} ); };
     print "Error writing to file: $@" if $@;
 }
 
 sub envwrite {
+    my ($g) = @_;
     open O, ">$ENV{HOME}/.penv" or die;
     for ( "a" .. "z", "A" .. "Z" ) {
-        my $file = $files->{$_};
+        my $file = $g->{files}->{$_};
         $file //= '';
         print O "export $_=$file\n";
     }
-    for ( keys %$files ) {
-        my $file = $files->{$_};
+    for ( keys %{ $g->{files} } ) {
+        my $file = $g->{files}->{$_};
         $file //= '';
         print O qq{echo "$_=$file"\n};
     }
@@ -206,23 +160,24 @@ sub fix {
 }
 
 sub init {
-    $current = $data->{current};
-    if ( !$data->{projects}->{$current}->{files} ) {
-        $data->{projects}->{$current}->{files} = {};
+    my ($g) = @_;
+    $g->{current} = $g->{data}->{current};
+    if ( !$g->{data}->{projects}->{ $g->{current} }->{files} ) {
+        $g->{data}->{projects}->{ $g->{current} }->{files} = {};
     }
-    if ( !$data->{projects}->{$current}->{commands} ) {
-        $data->{projects}->{$current}->{commands} = {};
+    if ( !$g->{data}->{projects}->{ $g->{current} }->{commands} ) {
+        $g->{data}->{projects}->{ $g->{current} }->{commands} = {};
     }
-    $files = $data->{projects}->{$current}->{files};
-    $cmds  = $data->{projects}->{$current}->{commands};
+    $g->{files} = $g->{data}->{projects}->{ $g->{current} }->{files};
+    $g->{cmds}  = $g->{data}->{projects}->{ $g->{current} }->{commands};
 }
 
 sub del {
-    my ( $ar, $dr ) = @_;
+    my ( $ar, $dr, $g ) = @_;
     for ( @{$ar} ) {
         delete $dr->{$_};
     }
-    pfreeze();
+    pfreeze($g);
 }
 
 sub fullpath {
@@ -266,337 +221,415 @@ sub derange {
 }
 
 sub pcopy {
-    my ( $from, $to, $delete_flag ) = @ARGV;
-    $data->{projects}->{$to} = clone( $data->{projects}->{$from} );
-    if ( $delete_flag ) {
-        delete $data->{projects}->{$from};
+    my ($g) = @_;
+    my ( $from, $to, $delete_flag ) = @{ $g->{args} };
+    $g->{data}->{projects}->{$to} = clone( $g->{data}->{projects}->{$from} );
+    if ($delete_flag) {
+        delete $g->{data}->{projects}->{$from};
     }
-    $data->{current} = $to;
-    $PROG            = 'f';
-    @ARGV            = ();
-    init();
-    pfreeze();
+    $g->{data}->{current} = $to;
+    $g->{prog} = 'f';
+    @{ $g->{args} } = ();
+    init($g);
+    pfreeze($g);
 }
 
-if ( $PROG eq 'cp' ) {
-    pcopy( $ARGV[0], $ARGV[1] );
-}
+sub main {
+    my ( $prog, @args ) = @_;
 
-if ( $PROG eq 'mv' ) {
-    my $delete_flag = 1;
-    pcopy( $ARGV[0], $ARGV[1], $delete_flag );
-}
+    my $g      = {};
+    my @g_keys = qw(
+      args
+      cmds
+      current
+      data
+      files
+      infile
+      legacy_infile
+      prog
+    );
 
-if ( $PROG eq 'zdir' ) {
-    my $key = $ARGV[0];
+    lock_keys( %{$g}, @g_keys );
 
-    if ($key) {
-        my $file = $files->{$key};
-        if ($file) {
-            print dirname($file);
-        }
-        else {
-            print STDERR "Can't make sense of $key.\n";
-            print STDERR "It is a file you don't have read permission on, \n";
-            print STDERR "or labels that don't have associated files.\n";
-        }
-    }
-}
+    $g->{args}          = \@args;
+    $g->{legacy_infile} = "$ENV{HOME}/.prc";
+    $g->{infile}        = "$ENV{HOME}/.pyaml";
+    my $VERSION = '0.2';
 
-if ( $PROG eq 'p' ) {
-    my $arg = $ARGV[0];
-    $arg //= '';
-    my ( $cmd, $proj ) = ( $arg =~ /(.)(.*)/ );
-    if ( defined $cmd && $cmd eq '-' ) {
-        if ( $proj eq $current ) {
-            print STDERR "Can't remove current project.\n";
-        }
-        else {
-            delete $data->{projects}->{$proj};
-            pfreeze;
-        }
-    }
-    elsif ( !$arg ) {
-        print "Projects:\n";
-        for ( sort keys %{ $data->{projects} } ) {
-            print( ( $_ eq $current ) ? '*' : ' ' );
-            my $label = $data->{projects}->{$_}->{label};
-            $label //= '';
-            printf " %-10s %-15s\n", $_, $label;
-        }
-    }
-    else {
-        $data->{current} = $arg;
-        $data->{projects}->{$arg}->{label} = $ARGV[1] if ( $ARGV[1] );
-        init();
-        @ARGV = ();
-        $PROG = 'f';
-        @ARGV = ();
-        pfreeze();
-    }
-}
+    my @ident = ( 0 .. 9, 'a' .. 'z', 'A' .. 'Z' );
 
-if ( $PROG eq 'f' or $PROG eq 'fa' ) {
-    my $na = scalar @ARGV;
-    my @x  = @ARGV;
+    my %ident;
 
-    if ( $na == 1 or $PROG eq 'fa' ) {
-        my $f  = '';
-        my $f1 = 0;
-        my @l  = split //, derange( $x[0], $files );
-        if ( $PROG eq 'fa' ) { @l = keys %{$files} }
-        if ( $l[0] eq '-' ) {    # Delete labels
-            shift @l;
-            del( \@l, $files );
+    @ident{@ident} = (1) x @ident;
+
+    ($prog) = ( $prog =~ m!.*/(.*)! );
+
+    if ( defined $args[0] ) {
+        if ( $args[0] eq '--help' or $args[0] eq '-?' or $args[0] eq '-h' ) {
+            $prog = 'z';
         }
-        else {                   # Edit files
-            for (@l) {
-                if ( $files->{$_} ) {
-                    $f .= "$files->{$_} ";
-                }
-                else { ++$f1 }
+        elsif ( $prog eq 'p' ) {
+            if ( $args[0] eq 'cp' or $args[0] eq 'mv' ) {
+                $prog = shift @args;
             }
-            if ( !$f1 ) {
-                exec "vim $f";
+        }
+    }
+    $g->{prog} = $prog;
+
+    if ( -e $g->{infile} ) {
+        $g->{data} = LoadFile($g->{infile});
+    }
+    elsif ( -r $g->{legacy_infile} ) {
+        $g->{data} = retrieve($g->{legacy_infile});
+    }
+    else { $g->{data} = {} }
+    init($g);
+
+    # structure of data
+#################################################################
+#$VAR1 = { 'current' => 't',
+#          'projects' => { 'pa' => { 'files' => { 'a' => '/home/dbradford/t3s/api_test.pl',
+#                                                 'o' => '/home/dbradford/bin/onetime',
+#                                                 'U' => '/opt/manfred/lib/Manfred/SimmCreate.pm' },
+#                                    'commands' => { 'a' => { 'cmd' => '/home/dbradford/t3s/api_test.sh',
+#                                                             'label' => '' },
+#                                                    't' => { 'cmd' => './api_post.sh',
+#                                                             'label' => '' } },
+#                                    'label' => 'Manfred Test Gauntlet (TM)'
+#                                  },
+#                          'pad' => {etc},
+#                        }
+#        };
+    if ( $g->{prog} eq 'cp' ) {
+        pcopy( $args[0], $args[1], $g );
+    }
+
+    if ( $g->{prog} eq 'mv' ) {
+        my $delete_flag = 1;
+        pcopy( $args[0], $args[1], $delete_flag, $g );
+    }
+
+    if ( $g->{prog} eq 'zdir' ) {
+        my $key = $args[0];
+
+        if ($key) {
+            my $file = $g->{files}->{$key};
+            if ($file) {
+                print dirname($file);
             }
             else {
-                print STDERR "Can't make sense of $x[0].\n";
+                print STDERR "Can't make sense of $key.\n";
                 print STDERR
                   "It is a file you don't have read permission on, \n";
                 print STDERR "or labels that don't have associated files.\n";
             }
         }
     }
-    elsif ( $na == 2 and $x[0] ne ',' ) {    # Add file to specific label
-        my ($file) = fullpath( $x[1] );
-        if ( $ident{ $x[0] } ) {
-            if ( -r $file ) {
-                $files->{ $x[0] } = $file;
-                pfreeze();
+
+    if ( $g->{prog} eq 'p' ) {
+        my $arg = $args[0];
+        $arg //= '';
+        my ( $cmd, $proj ) = ( $arg =~ /(.)(.*)/ );
+        if ( defined $cmd && $cmd eq '-' ) {
+            if ( $proj eq $g->{current} ) {
+                print STDERR "Can't remove current project.\n";
             }
             else {
-                print STDERR "Can't read: $file\n";
+                delete $g->{data}->{projects}->{$proj};
+                pfreeze($g);
+            }
+        }
+        elsif ( !$arg ) {
+            print "Projects:\n";
+            for ( sort keys %{ $g->{data}->{projects} } ) {
+                print( ( $_ eq $g->{current} ) ? '*' : ' ' );
+                my $label = $g->{data}->{projects}->{$_}->{label};
+                $label //= '';
+                printf " %-10s %-15s\n", $_, $label;
             }
         }
         else {
-            print STDERR "Invalid identifier: $x[0]\n";
-            print STDERR "Use one of: @ident\n";
+            $g->{data}->{current} = $arg;
+            $g->{data}->{projects}->{$arg}->{label} = $args[1] if ( $args[1] );
+            init($g);
+            @args      = ();
+            $g->{prog} = 'f';
+            @args      = ();
+            pfreeze($g);
         }
     }
-    elsif ( defined $x[0] && $x[0] eq ',' ) {    # Add files to generic label
-        shift @x;
-        for (@x) {
-            my ($file) = fullpath($_);
-            if ( -r $file ) {
-                for my $i (@ident) {
-                    if ( !exists $files->{$i} ) {
-                        $files->{$i} = $file;
-                        last;
+
+    if ( $g->{prog} eq 'f' or $g->{prog} eq 'fa' ) {
+        my $na = scalar @args;
+        my @x  = @args;
+
+        if ( $na == 1 or $g->{prog} eq 'fa' ) {
+            my $f  = '';
+            my $f1 = 0;
+
+            my $tmp = derange( $x[0], $g->{files} );
+            my @l = split //, (defined($tmp) ? $tmp : '');
+
+            if ( $g->{prog} eq 'fa' ) { @l = keys %{ $g->{files} } }
+            if ( $l[0] eq '-' ) {    # Delete labels
+                shift @l;
+                del( \@l, $g->{files}, $g );
+            }
+            else {                   # Edit files
+                for (@l) {
+                    if ( $g->{files}->{$_} ) {
+                        $f .= "$g->{files}->{$_} ";
                     }
+                    else { ++$f1 }
+                }
+                if ( !$f1 ) {
+                    exec "$ENV{EDITOR} $f";
+                }
+                else {
+                    print STDERR "Can't make sense of $x[0].\n";
+                    print STDERR
+                      "It is a file you don't have read permission on, \n";
+                    print STDERR
+                      "or labels that don't have associated files.\n";
+                }
+            }
+        }
+        elsif ( $na == 2 and $x[0] ne ',' ) {    # Add file to specific label
+            my ($file) = fullpath( $x[1] );
+            if ( $ident{ $x[0] } ) {
+                if ( -r $file ) {
+                    $g->{files}->{ $x[0] } = $file;
+                    pfreeze($g);
+                }
+                else {
+                    print STDERR "Can't read: $file\n";
                 }
             }
             else {
-                print STDERR "Can't read: $file\n";
+                print STDERR "Invalid identifier: $x[0]\n";
+                print STDERR "Use one of: @ident\n";
             }
         }
-        pfreeze();
-    }
-    else {    # Error/Print list of files
-        if ( $na != 0 ) {
-            print STDERR "Bad arguments.\n";
-        }
-        my $label = $data->{projects}->{$current}->{label};
-        $label //= '';
-        print "Project: $current ($label)\n";
-        print "Current files:\n";
-
-        my %sorted;
-        for ( keys %$files ) {
-            my ( $a, $b ) = ( $files->{$_} =~ m!(.*)/(.*)! );
-            my $i = lc($b) . lc($a);
-            ( $sorted{$i}->{path} ) = ( $a =~ /(.{1,70})/ );
-            ( $sorted{$i}->{file} ) = ( $b =~ /(.{1,50})/ );
-            $sorted{$i}->{let} = $_;
-        }
-
-        for ( sort keys %sorted ) {
-            printf "%-1s %-50s %-70s\n", $sorted{$_}->{let},
-              $sorted{$_}->{file}, $sorted{$_}->{path};
-        }
-    }
-}
-
-if ( $PROG eq 'x' or $PROG eq 'xa' ) {
-    my $na    = scalar @ARGV;
-    my @a     = @ARGV;
-    my $f1    = 0;
-    my $f2    = 0;
-    my $flist = '';
-    my $f     = '';
-
-    my @l = split //, derange( $a[0], $cmds );
-
-    my $g = $l[0];
-    if ( $g eq '.' or $g eq '-' ) { shift @l }
-
-    for (@l) {
-        if ( !$cmds->{$_} ) { ++$f1 }
-    }
-    if ( $a[1] =~ /^-(.*)/ ) {
-        $flist = $1;
-    }
-
-    if ( $na == 1 or $PROG eq 'xa' or $flist ) {
-        my $f = '';
-        if ( $PROG eq 'xa' ) { @l = keys %{$cmds} }
-        if ( $g eq '-' ) {    # Delete labels
-            del( \@l, $cmds );
-        }
-        elsif ( $g eq '.' ) {    # Edit commands
-            if ( !$f1 ) {
-                for (@l) {
-                    open OUT, ">/tmp/c.$$.$_"
-                      or die "Can't open temp file: /tmp/c.$$.$_";
-                    print OUT "$cmds->{$_}->{label}: $cmds->{$_}->{cmd}\n";
-                    print OUT
-"# The label precedes the colon above and my be edited freely\n";
-                    print OUT "# As long as the colon is left intact.\n";
-                    print OUT
-"# Only the first line is read. Don't add more lines to this file.\n";
-                    close OUT;
-                    $f .= "/tmp/c.$$.$_ ";
+        elsif ( defined $x[0] && $x[0] eq ',' ) {   # Add files to generic label
+            shift @x;
+            for (@x) {
+                my ($file) = fullpath($_);
+                if ( -r $file ) {
+                    for my $i (@ident) {
+                        if ( !exists $g->{files}->{$i} ) {
+                            $g->{files}->{$i} = $file;
+                            last;
+                        }
+                    }
                 }
+                else {
+                    print STDERR "Can't read: $file\n";
+                }
+            }
+            pfreeze($g);
+        }
+        else {    # Error/Print list of files
+            if ( $na != 0 ) {
+                print STDERR "Bad arguments.\n";
+            }
+            my $label = $g->{data}->{projects}->{ $g->{current} }->{label};
+            $label //= '';
+            print "Project: $g->{current} ($label)\n";
+            print "Current files:\n";
+
+            my %sorted;
+            for ( keys %{ $g->{files} } ) {
+                my ( $a, $b ) = ( $g->{files}->{$_} =~ m!(.*)/(.*)! );
+                my $i = lc($b) . lc($a);
+                ( $sorted{$i}->{path} ) = ( $a =~ /(.{1,70})/ );
+                ( $sorted{$i}->{file} ) = ( $b =~ /(.{1,50})/ );
+                $sorted{$i}->{let} = $_;
+            }
+
+            for ( sort keys %sorted ) {
+                printf "%-1s %-50s %-70s\n", $sorted{$_}->{let},
+                  $sorted{$_}->{file}, $sorted{$_}->{path};
+            }
+        }
+    }
+
+    if ( $g->{prog} eq 'x' or $g->{prog} eq 'xa' ) {
+        my $na    = scalar @args;
+        my @a     = @args;
+        my $f1    = 0;
+        my $f2    = 0;
+        my $flist = '';
+        my $f     = '';
+
+        my $tmp = derange( $a[0], $g->{cmds} );
+        my @l = split //, (defined($tmp) ? $tmp : '');
+
+        my $g_2 = defined($l[0]) ? $l[0] : '';
+        if ( $g_2 eq '.' or $g_2 eq '-' ) { shift @l }
+
+        for (@l) {
+            if ( !$g->{cmds}->{$_} ) { ++$f1 }
+        }
+        $a[1] //= '';
+        if ( $a[1] =~ /^-(.*)/ ) {
+            $flist = $1;
+        }
+
+        if ( $na == 1 or $g->{prog} eq 'xa' or $flist ) {
+            my $f = '';
+            if ( $g->{prog} eq 'xa' ) { @l = keys %{ $g->{cmds} } }
+            if ( $g_2 eq '-' ) {    # Delete labels
+                del( \@l, $g->{cmds}, $g );
+            }
+            elsif ( $g_2 eq '.' ) {    # Edit commands
+                if ( !$f1 ) {
+                    for (@l) {
+                        open OUT, ">/tmp/c.$$.$_"
+                          or die "Can't open temp file: /tmp/c.$$.$_";
+                        print OUT
+"$g->{cmds}->{$_}->{label}: $g->{cmds}->{$_}->{cmd}\n";
+                        print OUT
+"# The label precedes the colon above and my be edited freely\n";
+                        print OUT "# As long as the colon is left intact.\n";
+                        print OUT
+"# Only the first line is read. Don't add more lines to this file.\n";
+                        close OUT;
+                        $f .= "/tmp/c.$$.$_ ";
+                    }
 
 # Why is vi returning 1 on a good exit?
 #                if(!system("vim $f")) { # not(!) because in Unix 0 status is good
-                system("vim $f");
-                for (@l) {
-                    my $m;
-                    open OUT, "</tmp/c.$$.$_"
-                      or die "Can't open temp file: /tmp/c.$$.$_";
-                    chomp( $m = <OUT> );
-                    if ( $m =~ /(.*):\s*(.*)/ ) {
-                        $cmds->{$_}->{label} = $1;
-                        $cmds->{$_}->{cmd}   = $2;
+                    system("$ENV{EDITOR} $f");
+                    for (@l) {
+                        my $m;
+                        open OUT, "</tmp/c.$$.$_"
+                          or die "Can't open temp file: /tmp/c.$$.$_";
+                        chomp( $m = <OUT> );
+                        if ( $m =~ /(.*):\s*(.*)/ ) {
+                            $g->{cmds}->{$_}->{label} = $1;
+                            $g->{cmds}->{$_}->{cmd}   = $2;
+                        }
+                        else {
+                            print STDERR
+                              "Bad format on file for command labeled $_\n";
+                        }
+                        close OUT;
+                        unlink "/tmp/c.$$.$_";
                     }
-                    else {
-                        print STDERR
-                          "Bad format on file for command labeled $_\n";
-                    }
-                    close OUT;
-                    unlink "/tmp/c.$$.$_";
-                }
-                pfreeze();
+                    pfreeze($g);
 
-                #                }
+                    #                }
+                }
+                else {
+                    print STDERR "Bad labels in $a[0].\n";
+                }
             }
-            else {
-                print STDERR "Bad labels in $a[0].\n";
+            else {    # Run commands
+                my $f = '';
+                if ($flist) {
+
+                    my @m = split //, derange( $flist, $g->{files} );
+                    for (@m) {
+                        if ( $g->{files}->{$_} ) {
+                            $f .= "$g->{files}->{$_} ";
+                        }
+                        else { ++$f2 }
+                    }
+                }
+                if ($f2) {
+                    print STDERR "Can't make sense of $flist.\n";
+                    print STDERR
+                      "It is a file you don't have read permission on, \n";
+                    print STDERR
+                      "or labels that don't have associated files.\n";
+                }
+                elsif ( !$f1 ) {
+                    for (@l) {
+                        print "$g->{cmds}->{$_}->{cmd} $f\n";
+                        if ( system("/bin/sh -c '$g->{cmds}->{$_}->{cmd} $f'") )
+                        {
+                            print STDERR
+"An error occurred while running: $g->{cmds}->{$_}->{cmd}\n";
+                            last;
+                        }
+                    }
+                }
+                else {
+                    print STDERR "Bad labels in $a[0].\n";
+                }
             }
         }
-        else {    # Run commands
-            my $f = '';
-            if ($flist) {
-
-                my @m = split //, derange( $flist, $files );
-                for (@m) {
-                    if ( $files->{$_} ) {
-                        $f .= "$files->{$_} ";
-                    }
-                    else { ++$f2 }
-                }
+        elsif ( $na == 2 or $na == 3 ) {
+            if ( $ident{ $a[0] } ) {    # Add command to specific label
+                $g->{cmds}->{ $a[0] }->{cmd} = $a[1];
+                $g->{cmds}->{ $a[0] }->{label} = $a[2] || '';
+                pfreeze($g);
             }
-            if ($f2) {
-                print STDERR "Can't make sense of $flist.\n";
-                print STDERR
-                  "It is a file you don't have read permission on, \n";
-                print STDERR "or labels that don't have associated files.\n";
-            }
-            elsif ( !$f1 ) {
-                for (@l) {
-                    print "$cmds->{$_}->{cmd} $f\n";
-                    if ( system("/bin/sh -c '$cmds->{$_}->{cmd} $f'") ) {
-                        print STDERR
-"An error occurred while running: $cmds->{$_}->{cmd}\n";
+            elsif ( $a[0] eq ',' ) {    # Add command to generic label
+                for my $i (@ident) {
+                    if ( !exists $g->{cmds}->{$i}->{cmd} ) {
+                        $g->{cmds}->{$i}->{cmd} = $a[1];
+                        $g->{cmds}->{$i}->{label} = $a[2] || '';
                         last;
                     }
                 }
+                pfreeze($g);
             }
-            else {
-                print STDERR "Bad labels in $a[0].\n";
+            else {                      # Error
+                print STDERR "Invalid identifier: $a[0]\n";
+                print STDERR "Use one of: @ident\n";
+            }
+        }
+        else {                          # Print list of commands
+            if ( $na != 0 ) {
+                print STDERR "Bad arguments.\n";
+            }
+            print "Project: $g->{current}\n";
+            print "Current commands:\n";
+            for (
+                sort {
+                    my $c = lc $a;
+                    my $d = lc $b;
+                    if   ( $c eq $d ) { $b cmp $a }
+                    else              { $c cmp $d }
+                } keys %{ $g->{cmds} }
+              )
+            {
+                printf "%1s: %-20s %-15s\n", $_, $g->{cmds}->{$_}->{label},
+                  $g->{cmds}->{$_}->{cmd};
             }
         }
     }
-    elsif ( $na == 2 or $na == 3 ) {
-        if ( $ident{ $a[0] } ) {    # Add command to specific label
-            $cmds->{ $a[0] }->{cmd} = $a[1];
-            $cmds->{ $a[0] }->{label} = $a[2] || '';
-            pfreeze;
-        }
-        elsif ( $a[0] eq ',' ) {    # Add command to generic label
-            for my $i (@ident) {
-                if ( !exists $cmds->{$i}->{cmd} ) {
-                    $cmds->{$i}->{cmd} = $a[1];
-                    $cmds->{$i}->{label} = $a[2] || '';
-                    last;
-                }
-            }
-            pfreeze;
-        }
-        else {                      # Error
-            print STDERR "Invalid identifier: $a[0]\n";
-            print STDERR "Use one of: @ident\n";
-        }
-    }
-    else {                          # Print list of commands
-        if ( $na != 0 ) {
-            print STDERR "Bad arguments.\n";
-        }
-        print "Project: $current\n";
-        print "Current commands:\n";
-        for (
-            sort {
-                my $c = lc $a;
-                my $d = lc $b;
-                if   ( $c eq $d ) { $b cmp $a }
-                else              { $c cmp $d }
-            } keys %{$cmds}
-          )
-        {
-            printf "%1s: %-20s %-15s\n", $_, $cmds->{$_}->{label},
-              $cmds->{$_}->{cmd};
-        }
-    }
-}
 
-if ( $PROG eq 'z' ) {
-    print fix(<<"    EOF"), "\n";
-    Dave's Development System v$VERSION
-    Help commands:
-                   z  - this listing
-    Organization commands:
-                   f  - manage files
-                      examples:
-                      show list of files:    \$ f
-                      edit file 1, 3, and L: \$ f 13L
-                      edit all files:        \$ fa
-                      add file to the list : \$ f , /tmp/a.dmb /etc/hosts /etc/passwd
-                      add file with label L: \$ f L /tmp/a.dmb
-                      remove file 1, 3, L  : \$ f -13L
-                   x  - manage commands (same basic format as f)
-                      examples:
-                      show list of cmds:     \$ x
-                      run cmd 1, 3, and L:   \$ x 13L
-                      edit cmd 1, 3, and L:  \$ x .13L
-                      edit all cmds:         \$ xa
-                      add cmd to the list :  \$ x , 'echo hey' 'Optional Label'
-                         NOTE: surround command with quotes
-                      add cmd with label L:  \$ x L 'echo howdy; echo there' 'Optional Label'
-                      remove cmd 1, 3, L  :  \$ x -13L
-                   p  - change project/view list of projects
-                      show project list:     \$ p
-                      switch to project:     \$ p myproj
-                      remove project:        \$ p -myproj
-    Current project: $data->{'current'}
-    EOF
+    if ( $g->{prog} eq 'z' ) {
+        print fix(<<"        EOF"), "\n";
+        Dave's Development System v$VERSION
+        Help commands:
+                    z  - this listing
+        Organization commands:
+                    f  - manage files
+                        examples:
+                        show list of files:    \$ f
+                        edit file 1, 3, and L: \$ f 13L
+                        edit all files:        \$ fa
+                        add file to the list : \$ f , /tmp/a.dmb /etc/hosts /etc/passwd
+                        add file with label L: \$ f L /tmp/a.dmb
+                        remove file 1, 3, L  : \$ f -13L
+                    x  - manage commands (same basic format as f)
+                        examples:
+                        show list of cmds:     \$ x
+                        run cmd 1, 3, and L:   \$ x 13L
+                        edit cmd 1, 3, and L:  \$ x .13L
+                        edit all cmds:         \$ xa
+                        add cmd to the list :  \$ x , 'echo hey' 'Optional Label'
+                            NOTE: surround command with quotes
+                        add cmd with label L:  \$ x L 'echo howdy; echo there' 'Optional Label'
+                        remove cmd 1, 3, L  :  \$ x -13L
+                    p  - change project/view list of projects
+                        show project list:     \$ p
+                        switch to project:     \$ p myproj
+                        remove project:        \$ p -myproj
+        Current project: $g->{data}->{'current'}
+        EOF
+    }
 }
