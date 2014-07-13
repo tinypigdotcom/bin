@@ -122,6 +122,7 @@ use Clone qw(clone);
 use Cwd;
 use Data::Dumper;
 use File::Basename;
+use IO::File;
 use Storable;
 use YAML qw(LoadFile DumpFile);
 use Hash::Util qw(lock_keys);
@@ -133,21 +134,29 @@ sub pfreeze {
     envwrite();
     eval { DumpFile( $g->{infile}, $g->{data} ); };
     print "Error writing to file: $@" if $@;
+    return;
 }
 
 sub envwrite {
     my ($g) = @_;
-    open O, ">$ENV{HOME}/.penv" or die;
+
+    my $ofh = IO::File->new( "$ENV{HOME}/.penv", '>' );
+    die if ( !defined $ofh );
+
     for ( "a" .. "z", "A" .. "Z" ) {
         my $file = $g->{files}->{$_};
         $file //= '';
-        print O "export $_=$file\n";
+        print $ofh "export $_=$file\n";
     }
+
     for ( keys %{ $g->{files} } ) {
         my $file = $g->{files}->{$_};
         $file //= '';
-        print O qq{echo "$_=$file"\n};
+        print $ofh qq{echo "$_=$file"\n};
     }
+
+    $ofh->close;
+    return;
 }
 
 sub fix {
@@ -170,6 +179,7 @@ sub init {
     }
     $g->{files} = $g->{data}->{projects}->{ $g->{current} }->{files};
     $g->{cmds}  = $g->{data}->{projects}->{ $g->{current} }->{commands};
+    return;
 }
 
 sub del {
@@ -178,6 +188,7 @@ sub del {
         delete $dr->{$_};
     }
     pfreeze($g);
+    return;
 }
 
 sub fullpath {
@@ -232,6 +243,7 @@ sub pcopy {
     @{ $g->{args} } = ();
     init($g);
     pfreeze($g);
+    return;
 }
 
 sub main {
@@ -277,10 +289,10 @@ sub main {
     $g->{prog} = $prog;
 
     if ( -e $g->{infile} ) {
-        $g->{data} = LoadFile($g->{infile});
+        $g->{data} = LoadFile( $g->{infile} );
     }
     elsif ( -r $g->{legacy_infile} ) {
-        $g->{data} = retrieve($g->{legacy_infile});
+        $g->{data} = retrieve( $g->{legacy_infile} );
     }
     else { $g->{data} = {} }
     init($g);
@@ -368,7 +380,7 @@ sub main {
             my $f1 = 0;
 
             my $tmp = derange( $x[0], $g->{files} );
-            my @l = split //, (defined($tmp) ? $tmp : '');
+            my @l = split //, ( defined($tmp) ? $tmp : '' );
 
             if ( $g->{prog} eq 'fa' ) { @l = keys %{ $g->{files} } }
             if ( $l[0] eq '-' ) {    # Delete labels
@@ -462,9 +474,9 @@ sub main {
         my $f     = '';
 
         my $tmp = derange( $a[0], $g->{cmds} );
-        my @l = split //, (defined($tmp) ? $tmp : '');
+        my @l = split //, ( defined($tmp) ? $tmp : '' );
 
-        my $g_2 = defined($l[0]) ? $l[0] : '';
+        my $g_2 = defined( $l[0] ) ? $l[0] : '';
         if ( $g_2 eq '.' or $g_2 eq '-' ) { shift @l }
 
         for (@l) {
@@ -482,29 +494,32 @@ sub main {
                 del( \@l, $g->{cmds}, $g );
             }
             elsif ( $g_2 eq '.' ) {    # Edit commands
+                my $temp;
                 if ( !$f1 ) {
                     for (@l) {
-                        open OUT, ">/tmp/c.$$.$_"
-                          or die "Can't open temp file: /tmp/c.$$.$_";
-                        print OUT
+                        $temp = "/tmp/c.$$.$_";
+                        my $ofh = IO::File->new( $temp, '>' );
+                        die if ( !defined $ofh );
+
+                        print $ofh
 "$g->{cmds}->{$_}->{label}: $g->{cmds}->{$_}->{cmd}\n";
-                        print OUT
+                        print $ofh
 "# The label precedes the colon above and my be edited freely\n";
-                        print OUT "# As long as the colon is left intact.\n";
-                        print OUT
+                        print $ofh "# As long as the colon is left intact.\n";
+                        print $ofh
 "# Only the first line is read. Don't add more lines to this file.\n";
-                        close OUT;
-                        $f .= "/tmp/c.$$.$_ ";
+                        $f .= "$temp ";
+
+                        $ofh->close;
                     }
 
-# Why is vi returning 1 on a good exit?
-#                if(!system("vim $f")) { # not(!) because in Unix 0 status is good
                     system("$ENV{EDITOR} $f");
                     for (@l) {
                         my $m;
-                        open OUT, "</tmp/c.$$.$_"
-                          or die "Can't open temp file: /tmp/c.$$.$_";
-                        chomp( $m = <OUT> );
+                        $temp = "/tmp/c.$$.$_";
+                        my $ifh = IO::File->new( $temp, '<' );
+                        die if ( !defined $ifh );
+                        chomp( $m = <$ifh> );
                         if ( $m =~ /(.*):\s*(.*)/ ) {
                             $g->{cmds}->{$_}->{label} = $1;
                             $g->{cmds}->{$_}->{cmd}   = $2;
@@ -513,12 +528,11 @@ sub main {
                             print STDERR
                               "Bad format on file for command labeled $_\n";
                         }
-                        close OUT;
-                        unlink "/tmp/c.$$.$_";
+                        $ifh->close;
+                        unlink $temp;
                     }
                     pfreeze($g);
 
-                    #                }
                 }
                 else {
                     print STDERR "Bad labels in $a[0].\n";
@@ -632,4 +646,5 @@ sub main {
         Current project: $g->{data}->{'current'}
         EOF
     }
+    return 0;
 }
