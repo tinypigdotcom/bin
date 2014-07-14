@@ -125,21 +125,43 @@ use Data::Dumper;
 use File::Basename;
 use IO::File;
 use Storable;
-use YAML qw(LoadFile DumpFile);
 use Hash::Util qw(lock_keys);
 
 our $VERSION = '0.2';
+our $VAR1;
 
 exit main( $0, @ARGV );
 
 sub pfreeze {
     my ($g) = @_;
-    envwrite();
-    my $rc = eval { DumpFile( $g->{infile}, $g->{data} ) };
-    if ( !defined($rc) ) {
-        croak "Error writing to file: $@" if $@;
-    }
+    envwrite($g);
+    dump_write($g);
     return;
+}
+
+sub dump_read {
+    my ($g) = @_;
+
+    my $ifh = IO::File->new($g->{infile}, '<');
+    croak if (!defined $ifh);
+
+    my $contents = do { local $/; <$ifh> };
+    $ifh->close;
+
+    $g->{data} = eval $contents;
+    if ( !defined $g->{data} ) {
+        croak "failed eval of dump";
+    }
+}
+
+sub dump_write {
+    my ($g) = @_;
+
+    my $ofh = IO::File->new($g->{infile}, '>');
+    croak if (!defined $ofh);
+
+    print $ofh Dumper($g->{data});
+    $ofh->close;
 }
 
 sub envwrite {
@@ -622,7 +644,7 @@ sub main {
 
     $g->{args}          = \@args;
     $g->{legacy_infile} = "$ENV{HOME}/.prc";
-    $g->{infile}        = "$ENV{HOME}/.pyaml";
+    $g->{infile}        = "$ENV{HOME}/.pdump";
 
     my @ident = ( 0 .. 9, 'a' .. 'z', 'A' .. 'Z' );
 
@@ -648,7 +670,7 @@ sub main {
     $g->{prog} = $prog;
 
     if ( -e $g->{infile} ) {
-        $g->{data} = LoadFile( $g->{infile} );
+        dump_read($g);
     }
     elsif ( -r $g->{legacy_infile} ) {
         $g->{data} = retrieve( $g->{legacy_infile} );
