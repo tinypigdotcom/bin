@@ -148,10 +148,11 @@ sub dump_read {
     my $contents = do { local $/; <$ifh> };
     $ifh->close;
 
-    $g->{data} = eval $contents;
+    $g->{data} = eval $contents; ## no critic
     if ( !defined $g->{data} ) {
         croak "failed eval of dump";
     }
+    return;
 }
 
 sub dump_write {
@@ -162,6 +163,7 @@ sub dump_write {
 
     print $ofh Dumper($g->{data});
     $ofh->close;
+    return;
 }
 
 sub envwrite {
