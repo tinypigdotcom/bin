@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+VERSION=1.0
+
+function ask()
+{
+    echo -n "$@" '(y/[N]) ' ; read ans </dev/tty
+    case "$ans" in
+        y*|Y*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+if ! ask "Version numbers updated?"
+    then exit 1
+fi
+
