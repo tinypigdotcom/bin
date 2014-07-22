@@ -40,3 +40,8 @@ do
     echo
 
 done
+
+cmp ~/.vimrc ~/.vim/_vimrc
+diff ~/.vimrc ~/.vim/_vimrc
+cmp ~/.bash_profile ~/bin/_bash_profile
+diff ~/.bash_profile ~/bin/_bash_profile
