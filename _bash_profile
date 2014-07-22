@@ -56,7 +56,7 @@ ssh-add
 
 export EDITOR=vim
 export PERL5LIB=~/lib
-export PATH=$PATH:$HOME/bin:$HOME/bin2
+export PATH=$HOME/bin:$HOME/bin2:$PATH
 
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
