@@ -21,5 +21,5 @@ cp $FILE ~/archive
 cd ~/archive
 git add $BASE
 git commit -m "archived"
-git push origin master
+git push origin master 2>/dev/null
 
