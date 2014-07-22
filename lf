@@ -3,7 +3,7 @@
 
 if [ "$1" == "-r" ]; then
     echo "Rebuilding index..." >&2
-    find /cygdrive/c >~/full.cat
+    find /cygdrive >~/full.cat
     shift
 fi
 
