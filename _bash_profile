@@ -54,6 +54,7 @@ if [ -z "$SSH_AUTH_SOCK" -a -x "$SSHAGENT" ]; then
 fi
 ssh-add
 
+export PERLDOC="-t"
 export EDITOR=vim
 export PERL5LIB=~/lib
 export PATH=$HOME/bin:$HOME/bin2:$PATH
