@@ -14,28 +14,27 @@ my $d = DateTime::Format::Duration->new(
     normalize => 1,
 );
 
-while(<>) {
+while (<>) {
     chomp;
     if ( $_ eq '' ) {
         say $d->format_duration($dur) . " SUBTOTAL\n";
-#        say "SUBTOTAL: " . $dur->hours . ' ' . $dur->minutes . ' ' . $dur->seconds . "\n";
+
         $dur = DateTime::Duration->new();
     }
     else {
         my $orig = $_;
-        my @ja = split ' ';
+        my @ja   = split ' ';
         $_ = $ja[0];
         my @hm = split ':';
         $_ = join ':', @hm;
 
         $dur = $dur + DateTime::Duration->new(
-            hours       => $hm[0],
-            minutes     => $hm[1],
-            seconds     => $hm[2],
+            hours   => $hm[0],
+            minutes => $hm[1],
+            seconds => $hm[2],
         );
 
         say "$orig";
     }
 }
-
 
