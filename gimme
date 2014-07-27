@@ -1,0 +1,3 @@
+set -x
+cp ~/.vim/_vimrc ~/.vimrc
+cp ~/bin/_bash_profile ~/.bash_profile
