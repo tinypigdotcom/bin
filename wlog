@@ -19,7 +19,7 @@ my (
     $junk,            $junk,            $junk
 ) = localtime(time);
 
-my $MANUAL_DAY_SET = 1;
+my $MANUAL_DAY_SET = 0;
 my $mdy;
 if ($MANUAL_DAY_SET) {
     $current_minutes = 0;
