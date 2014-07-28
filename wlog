@@ -8,43 +8,39 @@ use DateTime::Duration;
 use DateTime::Format::Duration;
 use IO::File;
 
+our $VERSION = '1.12';
+
 my $dfd = DateTime::Format::Duration->new(
     pattern   => '%H:%M:%S',
     normalize => 1
 );
-
-my (
-    $current_seconds, $current_minutes, $current_hour,
-    $current_day,     $current_month,   $current_year,
-    $junk,            $junk,            $junk
-) = localtime(time);
-
-my $MANUAL_DAY_SET = 0;
 my $mdy;
-if ($MANUAL_DAY_SET) {
-    $current_minutes = 0;
-    $current_hour    = 18;
-    $current_day     = 24;
-    $mdy             = "$current_month/$current_day/$current_year ";
+
+my $backday = 0;
+
+if ( $ARGV[0] =~ /^-(.*)/ ) {
+    $backday = $1;
+    if ( $backday eq 'y' ) {
+        $backday = 1;
+    }
 }
 
-if ( $ARGV[0] eq '-y' ) {
-    $current_minutes = 0;
-    $current_hour    = 18;
-    $current_day     = 23;
+my $today = DateTime->now( time_zone => 'local' )->set_time_zone('floating')
+  ->subtract( days => $backday );
+if ($backday) {
+    $today->set_hour(18);
+    $today->set_minute(0);
+    $today->set_second(0);
 }
 
-$current_month = sprintf( "%02d", $current_month + 1 );
-$current_day   = sprintf( "%02d", $current_day );
-$current_year += 1900;
+my $current_year    = $today->year;
+my $current_month   = $today->month;
+my $current_day     = $today->day;
+my $current_hour    = $today->hour;
+my $current_minutes = $today->minute;
+my $current_seconds = $today->second;
 
-my $some_dir = '/cygdrive/c/TuSC/file';
-opendir( my $dh, $some_dir ) || die "can't opendir $some_dir: $!";
-my @files = grep { /^\wl/ && -f "$some_dir/$_" } readdir($dh);
-closedir $dh;
-
-my $previous_work_item = 'begin';
-print "${mdy}10:00:00...begin\n";
+print "Report for ", $today->strftime('%D'), "\n";
 
 my $previous_dt = DateTime->new(
     year      => $current_year,
@@ -58,32 +54,16 @@ my $previous_dt = DateTime->new(
 
 my $total_worked;
 
-sub duration_add {
-    my ( $item_total, $plus ) = @_;
-    dur_add( \$total_worked, $plus );
-    dur_add( $item_total,    $plus );
-}
+my $some_dir = '/cygdrive/c/TuSC/file';
+opendir( my $dh, $some_dir ) || die "can't opendir $some_dir: $!";
+my @files = grep { /^\wl/ && -f "$some_dir/$_" } readdir($dh);
+closedir $dh;
 
-sub dur_add {
-    my ( $item_total, $plus ) = @_;
-
-    if ( ${$item_total} ) {
-        ${$item_total} += ${$plus};
-    }
-    else {
-        ${$item_total} = ${$plus};
-    }
-}
+my $previous_work_item = 'begin';
+print "${mdy}10:00:00...begin\n";
 
 my $ofh = IO::File->new( "$ENV{HOME}/a.wlog", '>' );
 die if ( !defined $ofh );
-
-sub output {
-    my $out_line = join( '', @_ );
-    print $out_line;
-    print $ofh $out_line;
-    return;
-}
 
 my %wi;
 my $item_dt;
@@ -107,7 +87,6 @@ for my $file (@files) {
         and $current_year == $item_year
         and $work_item ne $previous_work_item )
     {
-
         $item_dt = DateTime->new(
             year      => $item_year,
             month     => $item_month,
@@ -154,3 +133,28 @@ output("-----------------------------------------------------------------\n");
 output( $dfd->format_duration($total_worked), " TOTAL\n" );
 
 $ofh->close;
+
+sub duration_add {
+    my ( $item_total, $plus ) = @_;
+    dur_add( \$total_worked, $plus );
+    dur_add( $item_total,    $plus );
+}
+
+sub dur_add {
+    my ( $item_total, $plus ) = @_;
+
+    if ( ${$item_total} ) {
+        ${$item_total} += ${$plus};
+    }
+    else {
+        ${$item_total} = ${$plus};
+    }
+}
+
+sub output {
+    my $out_line = join( '', @_ );
+    print $out_line;
+    print $ofh $out_line;
+    return;
+}
+
