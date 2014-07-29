@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use Modern::Perl '2014';
-our $VERSION = 'v0.1.2';
+our $VERSION = 'v0.1.3';
 
 # use warnings FATAL => 'all'; #template?
 
@@ -15,69 +15,95 @@ package MyTemplateScript {
     my $persist_file = "$ENV{HOME}/.my_template_script";
     my $do_persist   = 1;
 
-    my @keys = qw( argv template_bar template_foo );
 
-    # ------------------ "MAIN" ------------------------
-    sub run {
-        my ( $self, @argv ) = @_;
-        $self->{argv} = \@argv;
 
-        $self->template_process1();
-        $self->template_process2();
-        $self->{template_foo} = 3;
-        $self->{template_bar} = { name => 'baz' };
-        $self->freeze();
-        return 0;    # return for entire script template
-    }
 
-    sub template_process1 {
-        my ($self) = @_;
-        print "template_howdy\n";
-    }
 
-    sub template_process2 {
-        my ($self) = @_;
-        print "template_hey\n";
-    }
+# ------------------ MAIN -----------------------------------------------------
+
+my @keys = qw( argv template_bar template_foo );
+
+sub run {
+    my ( $self, @argv ) = @_;
+    $self->{argv} = \@argv;
+
+    $self->template_process1();
+    $self->template_process2();
+    $self->{template_foo} = 5;
+    $self->{template_bar} = { name => 'baz' };
+    $self->freeze_me();
+    return 0; # return for entire script template
+}
+
+sub template_process1 {
+    my ($self) = @_;
+    print "template_process1\n";
+}
+
+sub template_process2 {
+    my ($self) = @_;
+    print "template_process2\n";
+}
+
+# ------------------ END MAIN -------------------------------------------------
+
+
+
+
+
 
     sub new {
         my ($class) = @_;
 
         my $self = {};
         bless $self, $class;
-        thaw( \$self );
+        thaw_me( \$self );
         lock_keys( %$self, @keys );
 
         return $self;
     }
 
-    sub thaw {
+    sub thaw_me {
         return unless $do_persist;
 
         my ($self) = @_;
+        ${$self} = thaw($persist_file);
 
-        my $ifh = IO::File->new( $persist_file, '<' );
-        return if ( !defined $ifh );
-
-        my $contents = do { local $/; <$ifh> };
-        $ifh->close;
-
-        ${$self} = eval $contents;
-        warn "Thawed! (template)\n", Dumper($self);
+        warn "thawed! (template)\n", Dumper($self);
         if ( !defined $self ) {
             croak "failed eval of dump";
         }
     }
 
-    sub freeze {
+    sub freeze_me {
         return unless $do_persist;
 
         my ($self) = @_;
+        $self->freeze( $persist_file, $self );
+    }
 
-        my $ofh = IO::File->new( $persist_file, '>' );
+    sub thaw {
+        my ( $self, $filename ) = @_;
+        if ( !ref($self) ) {
+            $filename = $self;
+        }
+
+        my $ifh = IO::File->new( $filename, '<' );
+        return if ( !defined $ifh );
+
+        my $contents = do { local $/; <$ifh> };
+        $ifh->close;
+
+        return eval $contents;
+    }
+
+    sub freeze {
+        my ( $self, $filename, $ref ) = @_;
+
+        my $ofh = IO::File->new( $filename, '>' );
         croak "Failed to open output file: $!" if ( !defined $ofh );
 
-        print $ofh Dumper($self);
+        print $ofh Dumper($ref);
         $ofh->close;
     }
 
