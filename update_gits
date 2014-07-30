@@ -1,4 +1,4 @@
-# test update without push
+VERSION=1.0.3
 SKIPFILE=upd_skip
 ROOT_DIR=/
 if [ -d /cygdrive ]; then
@@ -30,8 +30,7 @@ do
     fi
 
     echo
-    echo $a
-    echo -------------------------------------------------------
+    echo "===== $a"
     if [ -n "$status" ]; then
         echo "$status"
     fi
