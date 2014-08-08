@@ -1,5 +1,10 @@
 #!/usr/bin/perl
 
+# TODO
+# * add usage()
+# * add errout()
+# * create tests which could fix this
+
 use Modern::Perl '2014';
 our $VERSION = 'v0.1.3';
 
@@ -67,7 +72,10 @@ sub template_process2 {
         return unless $do_persist;
 
         my ($self) = @_;
-        ${$self} = thaw($persist_file);
+
+        return unless thaw($persist_file);
+
+        ${$self} = $VAR1;
 
         warn "thawed! (template)\n", Dumper($self);
         if ( !defined $self ) {
