@@ -1,30 +1,11 @@
 #!/usr/bin/perl
+# maybe use warnings FATAL => 'all';
 
 # TODO
-# * add usage()
 # * add errout()
-# * create tests which could fix this
+# * create tests which could fix dumb errors
 
-use Modern::Perl '2014';
-our $VERSION = 'v0.1.3';
-
-# use warnings FATAL => 'all'; #template?
-
-package MyTemplateScript {
-
-    use Carp;
-    use Data::Dumper;
-    use Hash::Util qw(lock_keys);
-    our $VAR1;
-
-    my $persist_file = "$ENV{HOME}/.my_template_script";
-    my $do_persist   = 1;
-
-
-
-
-
-# ------------------ MAIN -----------------------------------------------------
+use Modern::Perl'2014';our$VERSION='v0.1.4';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=1;my$DEBUG=0;
 
 my @keys = qw( argv template_bar template_foo );
 
@@ -32,8 +13,9 @@ sub run {
     my ( $self, @argv ) = @_;
     $self->{argv} = \@argv;
 
+    $self->errout('too many flurples');
+
     $self->template_process1();
-    $self->template_process2();
     $self->{template_foo} = 5;
     $self->{template_bar} = { name => 'baz' };
     $self->freeze_me();
@@ -45,17 +27,30 @@ sub template_process1 {
     print "template_process1\n";
 }
 
-sub template_process2 {
+sub usage {
     my ($self) = @_;
-    print "template_process2\n";
+
+    print STDERR <<EOF;
+Usage: template [OPTION]... PATTERN [FILE]...
+Check for BLAHBLAHBLAH in something somewhere template
+Example: template -i 'hello world' menu.h
+
+Argument subtitle 1:
+  -E, --extended-regexp     PATTERN is an extended regular expression (ERE)
+
+Argument subtitle 2:
+  -s, --no-messages         suppress error messages
+EOF
 }
 
-# ------------------ END MAIN -------------------------------------------------
+sub errout {
+    my ($self,$message) = @_;
+    print STDERR "ERROR: $message\n";
+    $self->usage();
+    die;
+}
 
-
-
-
-
+# ================== END MAIN =================================================
 
     sub new {
         my ($class) = @_;
@@ -77,7 +72,9 @@ sub template_process2 {
 
         ${$self} = $VAR1;
 
-        warn "thawed! (template)\n", Dumper($self);
+        if ( $DEBUG ) {
+            warn "thawed!\n", Dumper($self);
+        }
         if ( !defined $self ) {
             croak "failed eval of dump";
         }
