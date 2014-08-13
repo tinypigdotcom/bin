@@ -2,35 +2,78 @@
 # maybe use warnings FATAL => 'all';
 
 # TODO
-# * add errout()
 # * create tests which could fix dumb errors
 
-use Modern::Perl'2014';our$VERSION='v0.1.4';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=1;my$DEBUG=0;
+use Modern::Perl'2014';use warnings;our$VERSION='v0.1.5';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
-my @keys = qw( argv template_bar template_foo );
+my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
 sub run {
     my ( $self, @argv ) = @_;
     $self->{argv} = \@argv;
 
-    $self->errout('too many flurples');
+    $self->check_inputs();
 
     $self->template_process1();
-    $self->{template_foo} = 5;
-    $self->{template_bar} = { name => 'baz' };
     $self->freeze_me();
     return 0; # return for entire script template
 }
 
-sub template_process1 {
+sub check_inputs {
     my ($self) = @_;
-    print "template_process1\n";
+    my %valid_switch = (
+        '-a' => 'template_switch1',
+        '-b' => 'template_switch2',
+    );
+    while (my $arg = shift(@{$self->{argv}})) {
+        if ( $arg =~ /^(-.*)/ ) {
+            my $switch = $1;
+            if ( $switch eq '-?' or $switch eq '-h' or $switch eq '--help' )  {
+                 print STDERR $self->usage();
+                 exit 2;
+            }
+            if ( !$valid_switch{$switch} )  {
+                $self->errout("bad switch $switch");
+            }
+            $self->{$valid_switch{$switch}}++;
+        }
+        else { # template start non-switch args
+            if ( @{$self->{argv}} > 0 )  { # template how many input files allowed
+                $self->errout(message=>"too many input files", no_usage => 1);
+            }
+            if ( ! -r $arg ) {
+                $self->errout(message=>"can't read file \"$arg\"", no_usage => 1);
+            }
+            $self->{input_file} = $arg;
+            last;
+        }
+    }
+    if (( !$self->{template_switch1} and !$self->{template_switch2} ) or
+        ( $self->{template_switch1} and $self->{template_switch2} )) {
+        $self->errout("must use either -w or -m");
+    }
+}
+
+sub main_template_run {
+    my ($self) = @_;
+
+    my $ifh = IO::File->new($0, '<');
+    die if (!defined $ifh);
+
+    while(<$ifh>) {
+        chomp;
+        print "*** l: $_\n";
+        last;
+    }
+    $ifh->close;
+
+    print "*** main_template_run\n";
 }
 
 sub usage {
     my ($self) = @_;
 
-    print STDERR <<EOF;
+    return <<EOF;
 Usage: template [OPTION]... PATTERN [FILE]...
 Check for BLAHBLAHBLAH in something somewhere template
 Example: template -i 'hello world' menu.h
@@ -44,10 +87,19 @@ EOF
 }
 
 sub errout {
-    my ($self,$message) = @_;
-    print STDERR "ERROR: $message\n";
-    $self->usage();
-    die;
+    my $self = shift;
+    my %params;
+    if ( @_ == 1 ) {
+        $params{message} = $_[0];
+    }
+    else {
+        %params = @_;
+    }
+    my $message = "error: $params{message}\n";
+    if ( !$params{no_usage} ) {
+        $message .= $self->usage();
+    }
+    die $message;
 }
 
 # ================== END MAIN =================================================
@@ -116,6 +168,6 @@ sub errout {
 
 package main;
 
-my $app = MyTemplateScript->new();    # TEMPLATE change
+my $app = MyTemplateScript->new();
 exit $app->run(@ARGV);
 
