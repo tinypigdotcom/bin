@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+# purpose: list all personal commands on this system
+
 # maybe use warnings FATAL => 'all';
 
 # TODO
@@ -17,6 +20,65 @@ sub run {
     $self->main_coms_run();
     $self->freeze_me();
     return 0;    # return for entire script
+}
+
+sub main_coms_run {
+    my ($self) = @_;
+
+    chdir $ENV{HOME} || die "can't chdir $ENV{HOME}: $!";
+    my @bins = grep { /^bin\d?/ && -d "./$_" } get_directory();
+    my @files;
+    my %comsignore;
+    for my $bin ( @bins ) {
+        push @files, map { "$bin/$_" } grep { !/^\./ } get_directory($bin);
+        my $ignorefile = "$bin/.comsignore";
+        if ( -r $ignorefile ) {
+
+            my $ifh = IO::File->new($ignorefile, '<');
+            die if (!defined $ifh);
+
+            while(<$ifh>) {
+                chomp;
+                s/^\s*//;
+                s/\s*$//;
+                $comsignore{"$bin/$_"}++;
+            }
+            $ifh->close;
+
+        }
+    }
+
+    for my $file ( @files ) {
+        my $ifh = IO::File->new( $file, '<' );
+        die "can't open $file: $!" if ( !defined $ifh );
+
+        my $found=0;
+        next if $comsignore{$file};
+        while (<$ifh>) {
+            chomp;
+            if ( /#\s*purpose:\s*(.*)/ ) {
+                $found++;
+                my $text = $1;
+                if ( $text ) {
+                    printf "%-25s $text\n", $file;
+                }
+                last;
+            }
+        }
+        $ifh->close;
+        if ( !$found ) {
+            printf "%-25s ???\n", $file;
+        }
+    }
+}
+
+sub usage {
+    croak "This is a function, not a method" if ( ref $_[0] );
+
+    return <<EOF;
+Usage: coms
+list all personal commands on this system
+EOF
 }
 
 sub check_inputs {
@@ -67,29 +129,6 @@ sub check_inputs {
     {
         errout("must use either -a or -b");
     }
-}
-
-sub main_coms_run {
-    my ($self) = @_;
-
-    my $input_file=$self->{input_file}||$0;
-    my $ifh = IO::File->new( $input_file, '<' );
-    die "can't open $input_file: $!" if ( !defined $ifh );
-
-    while (<$ifh>) {
-        chomp;
-        print "*** l: $_\n";
-    }
-    $ifh->close;
-}
-
-sub usage {
-    croak "This is a function, not a method" if ( ref $_[0] );
-
-    return <<EOF;
-Usage: coms
-list all personal commands on this system
-EOF
 }
 
  # ================== END MAIN =================================================
@@ -191,6 +230,7 @@ EOF
         croak "This is a function, not a method" if ( ref $_[0] );
 
         my ($dir) = @_;
+        $dir ||= '.';
 
         opendir(my $dh, $dir) || die "can't opendir $dir: $!";
         my @files = readdir($dh);
@@ -198,9 +238,6 @@ EOF
 
         return @files;
     }
-
-    my $target = $ENV{HOME};
-    my @bins = grep { /^bin\d?/ && -d "$target/$_" } get_directory($target);
 }
 
 package main;
