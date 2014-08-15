@@ -4,7 +4,7 @@
 # TODO
 # * create tests which could fix dumb errors
 
-use Modern::Perl '2014';use warnings;our$VERSION='v0.1.8';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
+use Modern::Perl '2014';use warnings;our$VERSION='v0.1.9';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
 my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
@@ -17,6 +17,36 @@ sub run {
     $self->main_template_run();
     $self->freeze_me();
     return 0;    # return for entire script template
+}
+
+sub main_template_run {
+    my ($self) = @_;
+
+    my $input_file=$self->{input_file}||$0;
+    my $ifh = IO::File->new( $input_file, '<' );
+    die "can't open $input_file: $!" if ( !defined $ifh );
+
+    while (<$ifh>) {
+        chomp;
+        print "*** l: $_\n";
+    }
+    $ifh->close;
+}
+
+sub usage {
+    croak "This is a function, not a method" if ( ref $_[0] );
+
+    return <<EOF;
+Usage: template [OPTION]... PATTERN [FILE]...
+Check for BLAHBLAHBLAH in something somewhere template
+Example: template -i 'hello world' menu.h
+
+Argument subtitle 1:
+-E, --extended-regexp     PATTERN is an extended regular expression (ERE)
+
+Argument subtitle 2:
+-s, --no-messages         suppress error messages
+EOF
 }
 
 sub check_inputs {
@@ -69,36 +99,6 @@ sub check_inputs {
     {
         errout("must use either -a or -b");
     }
-}
-
-sub main_template_run {
-    my ($self) = @_;
-
-    my $input_file=$self->{input_file}||$0;
-    my $ifh = IO::File->new( $input_file, '<' );
-    die "can't open $input_file: $!" if ( !defined $ifh );
-
-    while (<$ifh>) {
-        chomp;
-        print "*** l: $_\n";
-    }
-    $ifh->close;
-}
-
-sub usage {
-    croak "This is a function, not a method" if ( ref $_[0] );
-
-    return <<EOF;
-Usage: template [OPTION]... PATTERN [FILE]...
-Check for BLAHBLAHBLAH in something somewhere template
-Example: template -i 'hello world' menu.h
-
-Argument subtitle 1:
--E, --extended-regexp     PATTERN is an extended regular expression (ERE)
-
-Argument subtitle 2:
--s, --no-messages         suppress error messages
-EOF
 }
 
  # ================== END MAIN =================================================
