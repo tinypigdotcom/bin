@@ -1,7 +1,0 @@
-# purpose: produce a new todo report if task warrior has been updated
-FC=`find .task -newer .output/tasks.out -follow -name '*\.data' -type f | wc -l`
-
-if [ "$FC" -gt 0 ]; then
-    task nowc | grep "^[0-9]" | head >.output/tasks.out
-fi
-
