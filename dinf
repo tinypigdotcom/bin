@@ -1,0 +1,8 @@
+README=README.TXT
+if [ -f $README ]; then
+    cat $README
+else
+    echo "No $README here:"
+    pwd
+fi
+
