@@ -4,76 +4,85 @@
 # TODO
 # * create tests which could fix dumb errors
 
-use Modern::Perl'2014';use warnings;our$VERSION='v0.1.5';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
+use Modern::Perl '2014';use warnings;our$VERSION='v0.1.6';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
-my @keys = qw( argv switches template_switch1 template_switch2 input_file );
+    my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
-sub run {
-    my ( $self, @argv ) = @_;
-    $self->{argv} = \@argv;
+    sub run {
+        my ( $self, @argv ) = @_;
+        $self->{argv} = \@argv;
 
-    $self->check_inputs();
+        $self->check_inputs();
 
-    $self->template_process1();
-    $self->freeze_me();
-    return 0; # return for entire script template
-}
+        $self->template_process1();
+        $self->freeze_me();
+        return 0;    # return for entire script template
+    }
 
-sub check_inputs {
-    my ($self) = @_;
-    my %valid_switch = (
-        '-a' => 'template_switch1',
-        '-b' => 'template_switch2',
-    );
-    while (my $arg = shift(@{$self->{argv}})) {
-        if ( $arg =~ /^(-.*)/ ) {
-            my $switch = $1;
-            if ( $switch eq '-?' or $switch eq '-h' or $switch eq '--help' )  {
-                 print STDERR $self->usage();
-                 exit 2;
+    sub check_inputs {
+        my ( $self ) = @_;
+        my %valid_switch = (
+            '-a' => 'template_switch1',
+            '-b' => 'template_switch2',
+        );
+        while ( my $arg = shift( @{ $self->{argv} } ) ) {
+            if ( $arg =~ /^(-.*)/ ) {
+                my $switch = $1;
+                if ( $switch eq '-?' or $switch eq '-h' or $switch eq '--help' )
+                {
+                    print STDERR $self->usage();
+                    exit 2;
+                }
+                if ( !$valid_switch{$switch} ) {
+                    $self->errout("bad switch $switch");
+                }
+                $self->{ $valid_switch{$switch} }++;
             }
-            if ( !$valid_switch{$switch} )  {
-                $self->errout("bad switch $switch");
+            else {    # template start non-switch args
+                if ( @{ $self->{argv} } > 0 )
+                {     # template how many input files allowed
+                    $self->errout(
+                        message  => "too many input files",
+                        no_usage => 1
+                    );
+                }
+                if ( !-r $arg ) {
+                    $self->errout(
+                        message  => "can't read file \"$arg\"",
+                        no_usage => 1
+                    );
+                }
+                $self->{input_file} = $arg;
+                last;
             }
-            $self->{$valid_switch{$switch}}++;
         }
-        else { # template start non-switch args
-            if ( @{$self->{argv}} > 0 )  { # template how many input files allowed
-                $self->errout(message=>"too many input files", no_usage => 1);
-            }
-            if ( ! -r $arg ) {
-                $self->errout(message=>"can't read file \"$arg\"", no_usage => 1);
-            }
-            $self->{input_file} = $arg;
+        if (   ( !$self->{template_switch1} and !$self->{template_switch2} )
+            or ( $self->{template_switch1} and $self->{template_switch2} ) )
+        {
+            $self->errout("must use either -w or -m");
+        }
+    }
+
+    sub main_template_run {
+        my ($self) = @_;
+
+        my $ifh = IO::File->new( $0, '<' );
+        die if ( !defined $ifh );
+
+        while (<$ifh>) {
+            chomp;
+            print "*** l: $_\n";
             last;
         }
+        $ifh->close;
+
+        print "*** main_template_run\n";
     }
-    if (( !$self->{template_switch1} and !$self->{template_switch2} ) or
-        ( $self->{template_switch1} and $self->{template_switch2} )) {
-        $self->errout("must use either -w or -m");
-    }
-}
 
-sub main_template_run {
-    my ($self) = @_;
+    sub usage {
+        my ($self) = @_;
 
-    my $ifh = IO::File->new($0, '<');
-    die if (!defined $ifh);
-
-    while(<$ifh>) {
-        chomp;
-        print "*** l: $_\n";
-        last;
-    }
-    $ifh->close;
-
-    print "*** main_template_run\n";
-}
-
-sub usage {
-    my ($self) = @_;
-
-    return <<EOF;
+        return <<EOF;
 Usage: template [OPTION]... PATTERN [FILE]...
 Check for BLAHBLAHBLAH in something somewhere template
 Example: template -i 'hello world' menu.h
@@ -84,25 +93,9 @@ Argument subtitle 1:
 Argument subtitle 2:
   -s, --no-messages         suppress error messages
 EOF
-}
+    }
 
-sub errout {
-    my $self = shift;
-    my %params;
-    if ( @_ == 1 ) {
-        $params{message} = $_[0];
-    }
-    else {
-        %params = @_;
-    }
-    my $message = "error: $params{message}\n";
-    if ( !$params{no_usage} ) {
-        $message .= $self->usage();
-    }
-    die $message;
-}
-
-# ================== END MAIN =================================================
+ # ================== END MAIN =================================================
 
     sub new {
         my ($class) = @_;
@@ -115,6 +108,22 @@ sub errout {
         return $self;
     }
 
+    sub errout {
+        my $self = shift;
+        my %params;
+        if ( @_ == 1 ) {
+            $params{message} = $_[0];
+        }
+        else {
+            %params = @_;
+        }
+        my $message = "error: $params{message}\n";
+        if ( !$params{no_usage} ) {
+            $message .= $self->usage();
+        }
+        die $message;
+    }
+
     sub thaw_me {
         return unless $do_persist;
 
@@ -124,7 +133,7 @@ sub errout {
 
         ${$self} = $VAR1;
 
-        if ( $DEBUG ) {
+        if ($DEBUG) {
             warn "thawed!\n", Dumper($self);
         }
         if ( !defined $self ) {
@@ -140,10 +149,8 @@ sub errout {
     }
 
     sub thaw {
-        my ( $self, $filename ) = @_;
-        if ( !ref($self) ) {
-            $filename = $self;
-        }
+        my ($filename) = @_;
+        croak "This is a function, not a method" if ( ref $filename );
 
         my $ifh = IO::File->new( $filename, '<' );
         return if ( !defined $ifh );
@@ -155,7 +162,8 @@ sub errout {
     }
 
     sub freeze {
-        my ( $self, $filename, $ref ) = @_;
+        my ( $filename, $ref ) = @_;
+        croak "This is a function, not a method" if ( ref $filename );
 
         my $ofh = IO::File->new( $filename, '>' );
         croak "Failed to open output file: $!" if ( !defined $ofh );
@@ -164,6 +172,18 @@ sub errout {
         $ofh->close;
     }
 
+    sub random {
+        my ( $max, $min ) = @_;
+
+        croak "This is a function, not a method" if ( ref $max );
+
+        $min //= 1;
+        if ( $min > $max ) {
+            ( $min, $max ) = ( $max, $min );
+        }
+        my $range = $max - $min;
+        return int( rand( $range + 1 ) ) + $min;
+    }
 }
 
 package main;
