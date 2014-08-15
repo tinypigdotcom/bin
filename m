@@ -1,4 +1,3 @@
-#    purpose: scp file(s) to remote server
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -17,6 +16,8 @@
 #    The author, David M. Bradford, can be contacted at:
 #    davembradford@gmail.com
 #
+
+#    purpose: shortcut script for scp file(s) to remote server
 
 #
 

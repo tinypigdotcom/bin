@@ -1,5 +1,3 @@
-#    purpose: "jump" to remote server via ssh
-
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,6 +16,8 @@
 #    The author, David M. Bradford, can be contacted at:
 #    davembradford@gmail.com
 #
+
+#    purpose: shortcut script for "jump" to server via ssh
 
 #
 

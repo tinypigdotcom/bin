@@ -16,7 +16,7 @@
 #    The author, David M. Bradford, can be contacted at:
 #    davembradford@gmail.com
 
-#    purpose: scp file(s) from remote server
+#    purpose: shortcut script for scp file(s) from remote server
 #
 
 #

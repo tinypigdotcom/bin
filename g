@@ -18,8 +18,7 @@
 #    davembradford@gmail.com
 #
 
-#    purpose: issue git commands
-#    ^this line is necessary to work with s (shortcuts) command
+#    purpose: shorcut script for git commands
 
 #    $ g a myfile
 #    git add myfile

@@ -17,8 +17,7 @@
 #    davembradford@gmail.com
 #
 
-#    purpose: a helper script for task warrior
-#    ^this line is necessary to work with s (shortcuts) command
+#    purpose: shortcut script for task warrior
 
 #    $ t a foo
 #    task add foo due:today;sleep 1;~/taskrpt

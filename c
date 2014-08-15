@@ -1,6 +1,3 @@
-
-# purpose: helper script for easily changing directory
-
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,11 +16,8 @@
 #    The author, David M. Bradford, can be contacted at:
 #    davembradford@gmail.com
 #
+#    purpose: shorcut script for easy change directory
 
-#    sHORTCUT change directory
-#    ^this line is necessary to work with s (shortcuts) command
-
-#    "c" - my shorcut script for easy change directory.
 #    Usage:
 #    $ . c b
 #    $ pwd
