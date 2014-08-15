@@ -1,4 +1,3 @@
-#    "n" - a helper script for scp-ing from hosts
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -16,9 +15,10 @@
 #
 #    The author, David M. Bradford, can be contacted at:
 #    davembradford@gmail.com
+
+#    purpose: scp file(s) from remote server
 #
 
-#    sHORTCUT scp file(s) from remote server
 #
 
 # -------------------------- Data: map option letter to its associated command

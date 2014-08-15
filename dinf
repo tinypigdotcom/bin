@@ -1,3 +1,4 @@
+# purpose: show README.TXT in current working directory
 README=README.TXT
 if [ -f $README ]; then
     cat $README

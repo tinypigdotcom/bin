@@ -1,3 +1,6 @@
+
+# purpose: to quickly back up a script version into ~/archive via git
+
 # The point of it is to use as a quick backup for if I am working on something
 # outside a repository and I want to make sure I don't lose it.
 # bs stands for "backup script" I swear.

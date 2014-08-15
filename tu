@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# purpose: unpostpone all postponed tasks in task warrior
+
 use strict;
 use warnings;
 

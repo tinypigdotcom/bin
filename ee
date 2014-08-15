@@ -1,5 +1,5 @@
 
-# sHORTCUT edit file in your .utility directory
+# purpose: edit file in your .utility directory
 
 BASENAME=`basename $0`
 

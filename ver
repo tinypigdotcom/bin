@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# purpose: get current Unix version
+
 use strict;
 use warnings;
 

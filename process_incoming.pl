@@ -2,7 +2,7 @@
 
 # TODO: more error checking
 
-# add tasks to task warrior
+# purpose: automatically add tasks to task warrior from Dropbox folder
 
 use strict;
 use warnings;

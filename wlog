@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# purpose: print time card
+
 use strict;
 
 use Data::Dumper;

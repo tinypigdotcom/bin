@@ -1,4 +1,6 @@
-#    "c" - a helper script for easily changing directory
+
+# purpose: helper script for easily changing directory
+
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify

@@ -1,4 +1,6 @@
 
+# purpose: modify task warrior tasks in bulk
+
 # POSIX (maybe Bourne?)
 lockdir=/tmp/taskwarrior.lock
 if mkdir "$lockdir"

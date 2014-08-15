@@ -1,4 +1,4 @@
-#    "m" - a helper script for performing git commands
+#    purpose: scp file(s) to remote server
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 #    davembradford@gmail.com
 #
 
-#    sHORTCUT scp file(s) to remote server
 #
 
 # -------------------------- Data: map option letter to its associated command

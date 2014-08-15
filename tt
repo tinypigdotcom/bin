@@ -1,3 +1,4 @@
+# purpose: task warrior report
 PROG=$HOME/bin/tt
 
 a="task alldue;echo task alldue >$HOME/taskrpt"

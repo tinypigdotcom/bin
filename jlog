@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# purpose: create subtotals from wlog output
+
 use 5.14.0;
 use autodie;
 use warnings;

@@ -1,4 +1,6 @@
 #!/bin/bash
+# purpose: run task warrior reports
+
 PROG=`basename $0`
 
 errout() {
