@@ -4,7 +4,7 @@
 # TODO
 # * create tests which could fix dumb errors
 
-use Modern::Perl '2014';use warnings;our$VERSION='v0.1.7';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
+use Modern::Perl '2014';use warnings;our$VERSION='v0.1.8';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
 my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
@@ -56,14 +56,16 @@ sub check_inputs {
             last;
         }
     }
-    if ( !$self->{input_file} ) {
+    # template remove "0 &&" to turn on
+    if ( 0 && !$self->{input_file} ) {
         errout(
             message  => "no valid input files provided",
             no_usage => 1
         );
     }
-    if (   ( !$self->{template_switch1} and !$self->{template_switch2} )
-        or ( $self->{template_switch1} and $self->{template_switch2} ) )
+    # template remove "0 &&" to turn on
+    if ( 0 && ( !$self->{template_switch1} and !$self->{template_switch2} )
+           or ( $self->{template_switch1} and $self->{template_switch2} ) )
     {
         errout("must use either -a or -b");
     }
@@ -72,8 +74,9 @@ sub check_inputs {
 sub main_template_run {
     my ($self) = @_;
 
-    my $ifh = IO::File->new( $self->{input_file}, '<' );
-    die if ( !defined $ifh );
+    my $input_file=$self->{input_file}||$0;
+    my $ifh = IO::File->new( $input_file, '<' );
+    die "can't open $input_file: $!" if ( !defined $ifh );
 
     while (<$ifh>) {
         chomp;
@@ -190,6 +193,23 @@ EOF
         my $range = $max - $min;
         return int( rand( $range + 1 ) ) + $min;
     }
+
+    # example
+    # my @dot_files = grep { /^\./ && -f "$some_dir/$_" } get_directory($target);
+    sub get_directory {
+        croak "This is a function, not a method" if ( ref $_[0] );
+
+        my ($dir) = @_;
+
+        opendir(my $dh, $dir) || die "can't opendir $dir: $!";
+        my @files = readdir($dh);
+        closedir $dh;
+
+        return @files;
+    }
+
+    my $target = $ENV{HOME};
+    my @bins = grep { /^bin\d?/ && -d "$target/$_" } get_directory($target);
 }
 
 package main;
