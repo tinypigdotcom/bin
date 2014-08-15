@@ -4,7 +4,7 @@
 # TODO
 # * create tests which could fix dumb errors
 
-use Modern::Perl '2014';use warnings;our$VERSION='v0.1.9';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
+use Modern::Perl '2014';use warnings;our$VERSION='v0.1.10';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
 my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
@@ -207,9 +207,6 @@ sub check_inputs {
 
         return @files;
     }
-
-    my $target = $ENV{HOME};
-    my @bins = grep { /^bin\d?/ && -d "$target/$_" } get_directory($target);
 }
 
 package main;
