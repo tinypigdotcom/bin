@@ -5,8 +5,9 @@
 # TODO
 # * create tests which could fix dumb errors
 
-use Modern::Perl '2014';use warnings;our$VERSION='v0.1.11';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
+use Modern::Perl '2014';use warnings;our$TEMPLATE_VERSION='v0.1.12';package MyTemplateScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.my_template_script";my$do_persist=0;my$DEBUG=0;
 
+our $VERSION = 'v0.0.0'; #template
 my @keys = qw( argv switches template_switch1 template_switch2 input_file );
 
 sub run {
