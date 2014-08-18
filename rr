@@ -1,0 +1,59 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings FATAL => 'all';
+
+use Data::Dumper;
+use IO::File;
+
+sub get_directory {
+    my ($dir) = @_;
+    opendir(my $dh, $dir) || die "can't opendir $dir: $!";
+    my @files = readdir($dh);
+    closedir $dh;
+    return @files;
+}
+
+sub main {
+    my @argv = @_;
+    my $dir = "$ENV{HOME}/.snippets";
+    my @snippets = grep { !/^\./ && -f "$dir/$_" } get_directory($dir);
+    print "Snippets:\n";
+    my $count=1;
+    for(@snippets) {
+        print "    " . $count++ . ". $_\n";
+    }
+    print "which? ";
+    my $junk = <STDIN>;
+    chomp $junk;
+    my $infile = "$dir/$snippets[$junk-1]";
+
+    my $ifh = IO::File->new($infile, '<');
+    die if (!defined $ifh);
+
+    my $ofh = IO::File->new("$ENV{HOME}/.rr", '>');
+    die if (!defined $ofh);
+
+    while(<$ifh>) {
+        chomp;
+        print $ofh "$_\n";
+    }
+
+    $ofh->close;
+    $ifh->close;
+
+    return;
+}
+
+my $rc = ( main(@ARGV) || 0 );
+
+exit $rc;
+
+sub timestamp {
+    my ($sec,$min,$hour,$mday,$mon,$year) = localtime(time);
+
+    $mon++;
+    $year += 1900;
+
+    return sprintf("%04s%02s%02s%02s%02s%02s",$year,$mon,$mday,$hour,$min,$sec);
+}
