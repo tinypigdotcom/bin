@@ -1,1 +1,2 @@
+# purpose: works with "rr" to allow easily pulling snippets into vim
 cat ~/.rr

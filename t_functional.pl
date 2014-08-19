@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# purpose: functional (vs class) template
 
 use strict;
 use warnings FATAL => 'all';

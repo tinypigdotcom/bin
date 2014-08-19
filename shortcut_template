@@ -1,4 +1,6 @@
 #    <TEMPLATE>"g" - a helper script for performing git commands</TEMPLATE>
+# purpose: template for shortcuts like c and u
+# <TEMPLATE>purpose: describe what this script does</TEMPLATE>
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
