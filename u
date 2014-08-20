@@ -11,6 +11,7 @@ shift
 
 case $lookup in
    a) cmd="git add $*" ;;
+   g) cmd="update_gits" ;;
    l) cmd="ls -la $* | less";;
    p) cmd="ps aux | grep $*" ;;
    s) cmd="sudo su -" ;;
