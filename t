@@ -40,20 +40,26 @@
 #           x   task $* done;sleep 1;~/taskrpt
 
 # -------------------------- Data: map option letter to its associated command
+#     h  task proj:heap; echo task proj:heap >$HOME/taskrpt
+#     i  echo n | task \$* rc.confirmation:no delete;sleep 1;~/taskrpt
+#     j  task proj:job;echo task proj:job >$HOME/taskrpt
+#     u  echo n | task \$* modify -postponed;sleep 1;~/taskrpt
+#     l  task rc._forcecolor:on list | less -R
+
+VERSION=0.1.1
+
 A="
 
 
-     a  task add \$* due:today;sleep 1;~/taskrpt
+     a  task add \$*
      b  task \$* modify pri:M
      c  task \$* modify pri:L
-     j  task proj:job;echo task proj:job >$HOME/taskrpt
-     h  task proj:heap; echo task proj:heap >$HOME/taskrpt
-     i  echo n | task \$* rc.confirmation:no delete;sleep 1;~/taskrpt
-     l  task rc._forcecolor:on list | less -R
-     n  task now;echo task now >$HOME/taskrpt
-     p  echo n | task \$* modify +postponed;sleep 1;~/taskrpt
-     u  echo n | task \$* modify -postponed;sleep 1;~/taskrpt
-     x  task \$* done;sleep 1;~/taskrpt
+     l  task
+     o  task proj:tools
+     p  task proj:presentations
+     r  task proj:articles
+     t  task pri:H or pri:M or pri:L
+     x  task \$* done
 
 
 "
