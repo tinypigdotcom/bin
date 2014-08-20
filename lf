@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-#
+# purpose: locate file on local machine
 
 VERSION=1.1.1
 

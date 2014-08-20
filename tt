@@ -1,6 +1,0 @@
-PROG=$HOME/bin/tt
-
-a="task alldue;echo task alldue >$HOME/taskrpt"
-echo $a
-eval $a
-

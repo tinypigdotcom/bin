@@ -1,4 +1,4 @@
 
-# sHORTCUT get variables from p shortcuts
+# purpose: get variables from "p" project files
 source ~/.penv
 

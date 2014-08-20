@@ -1,0 +1,2 @@
+# purpose: show tasks that have a priority set
+task pri:H or pri:M or pri:L

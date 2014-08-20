@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# purpose: pull snippets into vim
+
+use strict;
+use warnings FATAL => 'all';
+
+use Data::Dumper;
+use IO::File;
+
+our $VERSION='v0.1.2';
+
+sub get_directory {
+    my ($dir) = @_;
+    opendir(my $dh, $dir) || die "can't opendir $dir: $!";
+    my @files = readdir($dh);
+    closedir $dh;
+    return @files;
+}
+
+sub main {
+    my @argv = @_;
+    my $dir = "$ENV{HOME}/.snippets";
+    my @snippets = grep { !/^\./ && -f "$dir/$_" } get_directory($dir);
+    print "Snippets:\n";
+    my $count=1;
+    for(@snippets) {
+        print "    " . $count++ . ". $_\n";
+    }
+    print "which? ";
+    my $junk = <STDIN>;
+    chomp $junk;
+    my $infile = "$dir/$snippets[$junk-1]";
+
+    my $ifh = IO::File->new($infile, '<');
+    die if (!defined $ifh);
+
+    my $ofh = IO::File->new("$ENV{HOME}/.rr", '>');
+    die if (!defined $ofh);
+
+    while(<$ifh>) {
+        chomp;
+        print $ofh "$_\n";
+    }
+
+    $ofh->close;
+    $ifh->close;
+
+    return;
+}
+
+my $rc = ( main(@ARGV) || 0 );
+
+exit $rc;
+

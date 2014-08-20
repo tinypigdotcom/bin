@@ -1,5 +1,5 @@
 
-# sHORTCUT interact with mysql
+# purpose: shortcut script (OLD version) for interacting with mysql
 
 usage() {
       sed -n '/^  *[a-zA-Z0-9][a-zA-Z0-9]*)/ {

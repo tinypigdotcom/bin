@@ -1,4 +1,3 @@
-#    "t" - a helper script for task warrior
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,8 +17,7 @@
 #    davembradford@gmail.com
 #
 
-#    sHORTCUT a helper script for task warrior
-#    ^this line is necessary to work with s (shortcuts) command
+#    purpose: shortcut script for task warrior
 
 #    $ t a foo
 #    task add foo due:today;sleep 1;~/taskrpt

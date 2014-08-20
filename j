@@ -1,4 +1,3 @@
-#    "j" - a helper script for performing git commands
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,7 +17,8 @@
 #    davembradford@gmail.com
 #
 
-#    sHORTCUT "jump" to remote server via ssh
+#    purpose: shortcut script for "jump" to server via ssh
+
 #
 
 # -------------------------- Data: map option letter to its associated command

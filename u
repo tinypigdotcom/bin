@@ -1,4 +1,6 @@
 
+# purpose: shortcut script (OLD version) for Unix commands
+
 usage() {
       sed -n '/^  *[a-zA-Z0-9][a-zA-Z0-9]*)/ {
 s?^\(  *[a-zA-Z0-9][a-zA-Z0-9]*\)) *cmd="\(.*\)" *;;?\1  \2?

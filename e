@@ -1,5 +1,5 @@
 
-# sHORTCUT edit file in your bin directory
+# purpose: edit file in your bin or bin2 directory
 
 BASENAME=`basename $0`
 

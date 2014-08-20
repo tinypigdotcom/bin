@@ -628,7 +628,7 @@ function my_ip() # Get IP adress on ethernet.
     echo ${MY_IP:-"Not connected"}
 }
 
-function ii()   # Get current host related info.
+function iii()   # Get current host related info.
 {
     echo -e "\nYou are logged on ${BRed}$HOST"
     echo -e "\n${BRed}Additionnal information:$NC " ; uname -a

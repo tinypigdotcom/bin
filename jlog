@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# purpose: create subtotals from wlog time card output
+
 use 5.14.0;
 use autodie;
 use warnings;

@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-# comment for no reason
+
+# purpose: Dave's Project / File Manager (also see: f, fa, x, xa, z)
 
 # put "p" in your path and then create links in the same directory to:
 # 'f'
@@ -12,7 +13,7 @@
 # 'v'
 # 'zdir'
 
-# p - Dave's Project / File Manager
+# Dave's Project / File Manager
 
 =head1 SYNOPSIS
 
