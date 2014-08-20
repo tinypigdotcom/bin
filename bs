@@ -5,6 +5,7 @@
 # outside a repository and I want to make sure I don't lose it.
 # bs stands for "backup script" I swear.
 
+VERSION=1.0.2
 PROG=`basename $0`
 
 errout() {
@@ -20,8 +21,10 @@ fi
 DIR=`dirname $FILE`
 BASE=`basename $FILE`
 
+mkdir ~/archive 2>/dev/null
 cp $FILE ~/archive
 cd ~/archive
+git init >/dev/null 2>&1
 git add $BASE
 git commit -m "archived"
 git push origin master 2>/dev/null
