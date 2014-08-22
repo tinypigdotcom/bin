@@ -34,12 +34,10 @@
 #       u  cd $HOME/utility
 
 # -------------------------- Data: map u_option letter to its associated command
+VERSION=0.1.2
 u_HERE_DIRS="
 
 
-     b   cd $HOME/bin
-     s   cd /some/arbitrarily/log/path/you/dont/want/to/type
-     u   cd ~/.utility
 
 
 "
