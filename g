@@ -40,25 +40,24 @@
 
 # -------------------------- Data: map option letter to its associated command
 VERSION=1.1.1
-A="
+A='
 
 
-     a   git add \$*
-     b   git branch
-     c   git commit -a
-     ca  git commit -a -m \"\$*\"
-     cm  git commit -m \"\$*\"
-     d   git diff
-     m   git checkout master \$*
-     pd  git push origin develop \$*
-     pm  git push origin master \$*
-     r   git checkout \$* # svn revert
-     rr  echo -n # git reset --hard HEAD
-     s   git status -s \$*
-     v   git checkout develop \$*
+    a      git add $*                  # Add
+    b      git branch                  # Branch
+    c      git commit -a               # Commit All
+    ca     git commit -a -m "$*"       # Commit All With Message
+    cm     git commit -m "$*"          # Commit With Message
+    v      git checkout develop $*     # Develop Checkout
+    d      git diff                    # Diff
+    m      git checkout master $*      # Master Checkout
+    pd     git push origin develop $*  # Push Develop
+    pm     git push origin master $*   # Push Master
+    r      git checkout $*             # Revert
+    s      git status -s $*            # Status
 
 
-"
+'
 
 # -------------------------- Setup -------------------------------------------
 PROG=g
@@ -87,9 +86,9 @@ usage() {
     echo "where n is one of:" >&2
     i=0
     while [  $i -lt ${#option[@]} ]; do
-        printf "    %4s   %4s\n" "${option[$i]}" "${cmd[$i]}" >&2
+        printf "    %-4s   ${cmd[$i]}\n" "${option[$i]}"
         let i=i+1
-    done
+    done | sort -k 2 -t '#' >&2
 }
 
 # -------------------------- Read data into array ----------------------------
