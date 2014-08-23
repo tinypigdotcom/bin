@@ -68,9 +68,9 @@ usage() {
     echo "where n is one of:" >&2
     u_i=0
     while [  $u_i -lt ${#u_option[@]} ]; do
-        echo "    ${u_option[$u_i]}   ${u_cmd[$u_i]}" >&2
+        printf "    %-4s   ${u_cmd[$u_i]}\n" "${u_option[$u_i]}"
         let u_i=u_i+1
-    done
+    done | sort -k 2 -t '#' >&2
 }
 
 # -------------------------- Read data into array ----------------------------
