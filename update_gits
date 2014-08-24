@@ -1,21 +1,63 @@
 
 # purpose: update all git directories on this system
 
-VERSION=1.0.4
+VERSION=1.0.5
 SKIPFILE=upd_skip
-ROOT_DIR=/
+GITLIST=$HOME/.update_gits
 if [ -d /cygdrive ]; then
     ROOT_DIR=/cygdrive
+else
+    ROOT_DIR=/
 fi
 
-find $ROOT_DIR -type d -name .git 2>/dev/null | while read a
+echo
+echo -n "Started "
+date +'%F %T'
+echo
+
+REASON=
+if [ ! -f $GITLIST ]; then
+    REASON="index file not found"
+else
+    TWENTY_FOUR_HOURS=$(expr 60 \* 60 \* 24)
+    NOW=$(date +%s)
+
+    MOD_EPOCH=$(stat -c %W $GITLIST)
+    DIFF=$(expr $NOW - $MOD_EPOCH)
+
+    MOD_DATE=$(stat -c %w $GITLIST)
+    MOD_DATE=${MOD_DATE%%.*}
+
+    STALE=
+    if [ "$DIFF" -gt "$TWENTY_FOUR_HOURS" ]; then
+        REASON="index file out-of-date"
+    fi
+    echo "Last index update: $MOD_DATE"
+fi
+
+if [ "$1" == "-r" ]; then
+    REASON="forced via command line switch '-r'"
+fi
+
+if [ -n "$REASON" ]; then
+    echo "Rebuilding index ($REASON)" >&2
+    echo
+    rm -f $GITLIST
+    find $ROOT_DIR -type d -name .git 2>/dev/null | while read a
+    do
+        cd "$a/.."
+        if [ -f $SKIPFILE ]; then
+            echo "(skipping $a)"
+            continue
+        fi
+        echo $a >>$GITLIST
+    done
+    echo
+fi
+
+while read a
 do
     cd "$a/.."
-
-    if [ -f $SKIPFILE ]; then
-        echo "(skipping $a)"
-        continue
-    fi
 
     status=$(git status -s 2>&1)
     status_status=$?
@@ -32,16 +74,26 @@ do
         continue
     fi
 
-    echo
-    echo "===== $a"
-    if [ -n "$status" ]; then
-        echo "$status"
+    if [ -z "$status" -a "$pull" == "Already up-to-date." -a "$push" == "Everything up-to-date" ]; then
+        echo "[OK] $a "
+    else
+        if [ "$pull" == "Already up-to-date." -a "$push" == "Everything up-to-date" ]; then
+            echo "[OK] $a "
+            if [ -n "$status" ]; then
+                echo "$status"
+            fi
+        else
+            echo "$a "
+            if [ -n "$status" ]; then
+                echo "$status"
+            fi
+            echo "$pull"
+            echo "$push"
+        fi
+        echo
     fi
-    echo "$pull"
-    echo "$push"
-    echo
 
-done
+done <$GITLIST
 
 cmp ~/.vimrc ~/.vim/_vimrc
 diff ~/.vimrc ~/.vim/_vimrc
@@ -49,4 +101,6 @@ cmp ~/.bash_profile ~/bin/_bash_profile
 diff ~/.bash_profile ~/bin/_bash_profile
 echo
 echo -n "Finished "
-date
+date +'%F %T'
+echo
+
