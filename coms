@@ -9,7 +9,7 @@
 
 use Modern::Perl '2014';use warnings;our$TEMPLATE_VERSION='v0.1.7';package ComsScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.coms_script";my$do_persist=0;my$DEBUG=0;
 
-our $VERSION='v0.1.1';
+our $VERSION='v0.1.2';
 my @keys = qw( argv switches pattern coms_switch2 input_file );
 
 sub run {
@@ -33,7 +33,7 @@ sub main_coms_run {
     my @files;
     my %comsignore;
     for my $bin ( @bins ) {
-        push @files, map { "$bin/$_" } grep { !/^\./ } get_directory($bin);
+        push @files, map { "$bin/$_" } grep { !/^\./ && !-d "$bin/$_"} get_directory($bin);
         my $ignorefile = "$bin/.comsignore";
         if ( -r $ignorefile ) {
 
