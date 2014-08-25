@@ -83,7 +83,7 @@ do
                 echo "$status"
             fi
         else
-            echo "$a "
+            echo "**** $a "
             if [ -n "$status" ]; then
                 echo "$status"
             fi
