@@ -1,7 +1,7 @@
 
 # purpose: update all git directories on this system
 
-VERSION=1.0.5
+VERSION=1.0.6
 SKIPFILE=upd_skip
 GITLIST=$HOME/.update_gits
 if [ -d /cygdrive ]; then
@@ -19,7 +19,7 @@ REASON=
 if [ ! -f $GITLIST ]; then
     REASON="index file was not found"
 else
-    TWENTY_FOUR_HOURS=$(expr 60 \* 60 \* 24)
+    ONE_WEEK=$(expr 60 \* 60 \* 24 \* 7)
     NOW=$(date +%s)
 
     MOD_EPOCH=$(stat -c %W $GITLIST)
@@ -29,7 +29,7 @@ else
     MOD_DATE=${MOD_DATE%%.*}
 
     STALE=
-    if [ "$DIFF" -gt "$TWENTY_FOUR_HOURS" ]; then
+    if [ "$DIFF" -gt "$ONE_WEEK" ]; then
         REASON="index file out-of-date"
     fi
     echo "Last index update: $MOD_DATE"
@@ -58,6 +58,11 @@ fi
 while read a
 do
     cd "$a/.."
+
+    if [ -f $SKIPFILE ]; then
+        echo "(skipping $a)"
+        continue
+    fi
 
     status=$(git status -s 2>&1)
     status_status=$?
