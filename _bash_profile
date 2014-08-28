@@ -1,4 +1,4 @@
-# VERSION 1.0.5 David Bradford's .bash_profile
+# VERSION 1.0.6 David Bradford's .bash_profile
 
 # To the extent possible under law, the author(s) have dedicated all
 # copyright and related and neighboring rights to this software to the
@@ -48,6 +48,17 @@ fi
 #   INFOPATH="${HOME}/info:${INFOPATH}"
 # fi
 
+SSHAGENT=/usr/bin/ssh-agent
+SSHAGENTARGS="-s"
+
+PATH="$HOME/bin:$HOME/bin2:$PATH"
+MANPATH=/usr/share/man
+EDITOR=vim
+PERLDOC='-t'
+export PATH MANPATH EDITOR PERLDOC
+
+PERL5LIB=~/lib:~/perl5/lib/site_perl/5.16.3:~/perl5/lib/perl5
+export PERL5LIB
 umask 002
 
 SSHAGENT=/usr/bin/ssh-agent
@@ -57,11 +68,6 @@ if [ -z "$SSH_AUTH_SOCK" -a -x "$SSHAGENT" ]; then
   trap "kill $SSH_AGENT_PID" 0
 fi
 ssh-add
-
-export PERLDOC="-t"
-export EDITOR=vim
-export PERL5LIB=~/lib
-export PATH=$HOME/bin:$HOME/bin2:$PATH
 
 function parse_git_branch {
   ref=$(git symbolic-ref HEAD 2> /dev/null) || return
@@ -256,54 +262,57 @@ fi
 
 
 
-NCPU=$(grep -c 'processor' /proc/cpuinfo)    # Number of CPUs
-SLOAD=$(( 100*${NCPU} ))        # Small load
-MLOAD=$(( 200*${NCPU} ))        # Medium load
-XLOAD=$(( 400*${NCPU} ))        # Xlarge load
+#NCPU=$(grep -c 'processor' /proc/cpuinfo)    # Number of CPUs
+#SLOAD=$(( 100*${NCPU} ))        # Small load
+#MLOAD=$(( 200*${NCPU} ))        # Medium load
+#XLOAD=$(( 400*${NCPU} ))        # Xlarge load
 
 # Returns system load as percentage, i.e., '40' rather than '0.40)'.
 function load()
 {
-    local SYSLOAD=$(cut -d " " -f1 /proc/loadavg | tr -d '.')
+#    local SYSLOAD=$(cut -d " " -f1 /proc/loadavg | tr -d '.')
     # System load of the current host.
-    echo $((10#$SYSLOAD))       # Convert to decimal.
+#    echo $((10#$SYSLOAD))       # Convert to decimal.
+    echo
 }
 
 # Returns a color indicating system load.
 function load_color()
 {
-    local SYSLOAD=$(load)
-    if [ ${SYSLOAD} -gt ${XLOAD} ]; then
-        echo -en ${ALERT}
-    elif [ ${SYSLOAD} -gt ${MLOAD} ]; then
-        echo -en ${Red}
-    elif [ ${SYSLOAD} -gt ${SLOAD} ]; then
-        echo -en ${BRed}
-    else
         echo -en ${Green}
-    fi
+#    local SYSLOAD=$(load)
+#    if [ ${SYSLOAD} -gt ${XLOAD} ]; then
+#        echo -en ${ALERT}
+#    elif [ ${SYSLOAD} -gt ${MLOAD} ]; then
+#        echo -en ${Red}
+#    elif [ ${SYSLOAD} -gt ${SLOAD} ]; then
+#        echo -en ${BRed}
+#    else
+#        echo -en ${Green}
+#    fi
 }
 
 # Returns a color according to free disk space in $PWD.
 function disk_color()
 {
-    if [ ! -w "${PWD}" ] ; then
-        echo -en ${Red}
-        # No 'write' privilege in the current directory.
-    elif [ -s "${PWD}" ] ; then
-        local used=$(command df -P "$PWD" |
-                   awk 'END {print $5} {sub(/%/,"")}')
-        if [ ${used} -gt 95 ]; then
-            echo -en ${ALERT}           # Disk almost full (>95%).
-        elif [ ${used} -gt 90 ]; then
-            echo -en ${BRed}            # Free disk space almost gone.
-        else
-            echo -en ${Green}           # Free disk space is ok.
-        fi
-    else
-        echo -en ${Cyan}
-        # Current directory is size '0' (like /proc, /sys etc).
-    fi
+    echo -en ${Green}           # Free disk space is ok.
+#    if [ ! -w "${PWD}" ] ; then
+#        echo -en ${Red}
+#        # No 'write' privilege in the current directory.
+#    elif [ -s "${PWD}" ] ; then
+#        local used=$(command df -P "$PWD" |
+#                   awk 'END {print $5} {sub(/%/,"")}')
+#        if [ ${used} -gt 95 ]; then
+#            echo -en ${ALERT}           # Disk almost full (>95%).
+#        elif [ ${used} -gt 90 ]; then
+#            echo -en ${BRed}            # Free disk space almost gone.
+#        else
+#            echo -en ${Green}           # Free disk space is ok.
+#        fi
+#    else
+#        echo -en ${Cyan}
+#        # Current directory is size '0' (like /proc, /sys etc).
+#    fi
 }
 
 # Returns a color according to running/suspended jobs.
@@ -342,7 +351,8 @@ case ${TERM} in
                                # --> Shows full pathname of current dir.
         ;;
 esac
-
+#PS1="[\[${Green}\]\A\[${NC}\] \[${Yellow}\]\u@\h \W\[\e[m\] ] > "
+#Green='\e[0;32m'        # Green
 
 
 export TIMEFORMAT=$'\nreal %3R\tuser %3U\tsys %3S\tpcpu %P\n'
@@ -389,7 +399,7 @@ alias df='df -kTh'
 # The 'ls' family (this assumes you use a recent GNU ls).
 #-------------------------------------------------------------
 # Add colors for filetype and  human-readable sizes by default on 'ls':
-alias ls='ls -h --color'
+#alias ls='ls -h --color'
 alias lx='ls -lXB'         #  Sort by extension.
 alias lk='ls -lSr'         #  Sort by size, biggest last.
 alias lt='ls -ltr'         #  Sort by date, most recent last.
@@ -397,7 +407,7 @@ alias lc='ls -ltcr'        #  Sort by/show change time,most recent last.
 alias lu='ls -ltur'        #  Sort by/show access time,most recent last.
 
 # The ubiquitous 'll': directories first, with alphanumeric sorting:
-alias ll="ls -lv --group-directories-first"
+alias ll="ls -l"
 alias lm='ll |more'        #  Pipe through 'more'
 alias lr='ll -R'           #  Recursive ls.
 alias la='ll -A'           #  Show hidden files.
@@ -456,7 +466,7 @@ function xtitle()
 
 # Aliases that use xtitle
 alias top='xtitle Processes on $HOST && top'
-alias make='xtitle Making $(basename $PWD) ; make'
+#alias make='xtitle Making $(basename $PWD) ; make'
 
 # .. and functions
 function man()
@@ -944,4 +954,5 @@ _killall()
 
 complete -F _killall killall killps
 
+#source ~/perl5/perlbrew/etc/bashrc
 
