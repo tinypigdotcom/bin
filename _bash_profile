@@ -1,4 +1,4 @@
-# VERSION 1.0.6 David Bradford's .bash_profile
+# VERSION 1.0.7 David Bradford's .bash_profile
 
 # To the extent possible under law, the author(s) have dedicated all
 # copyright and related and neighboring rights to this software to the
@@ -954,5 +954,8 @@ _killall()
 
 complete -F _killall killall killps
 
-#source ~/perl5/perlbrew/etc/bashrc
+# source my .bash_profile2 if it exists
+if [ -f "${HOME}/.bash_profile2" ] ; then
+  source "${HOME}/.bash_profile2"
+fi
 
