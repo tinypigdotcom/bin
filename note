@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+# purpose: functional (vs class) template
+
+use strict;
+use warnings FATAL => 'all';
+
+use Data::Dumper;
+use IO::File;
+
+my $notefile = "$ENV{HOME}/.notes";
+my $separator = '%%%';
+
+sub search_note {
+    my ($pattern) = @_;
+
+    my $ifh = IO::File->new($notefile, '<');
+    die if (!defined $ifh);
+
+    my $contents = do { local $/; <$ifh> };
+
+    $ifh->close;
+
+    my @notes = split /^%%%$/m, $contents;
+
+    my @lines;
+    for (@notes) {
+        if ( /$pattern/i ) {
+            s/^\n//;
+            s/\n$//;
+            push @lines, $_;
+        }
+    }
+    my $separator = '-' x 79;
+    print "\n",
+          join("\n$separator\n\n",@lines),
+          "\n";
+}
+
+sub make_note {
+    print "Make note:\n";
+
+    my $note;
+    while (<STDIN>) {
+        $note .= $_;
+    }
+
+    my $ofh = IO::File->new($notefile, '>>');
+    die if (!defined $ofh);
+
+    print $ofh "$separator\n";
+    print $ofh "$note\n";
+    $ofh->close;
+}
+
+sub main {
+    my ($pattern) = @_;
+
+    if ( $pattern ) {
+        search_note($pattern);
+    }
+    else {
+        make_note();
+    }
+    return;
+}
+
+my $rc = ( main(@ARGV) || 0 );
+
+exit $rc;
+
