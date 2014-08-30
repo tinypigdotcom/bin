@@ -82,10 +82,10 @@ sub search_note {
         my $output = join( "$output_separator\n", @lines );
         if ( @lines == 1 ) {
             my $cfh = IO::File->new('/dev/clipboard', '>');
-            die if (!defined $cfh);
-
-            print $cfh "$output";
-            $cfh->close;
+            if (defined $cfh) {
+                print $cfh "$output";
+                $cfh->close;
+            }
 
         }
         print $output;
