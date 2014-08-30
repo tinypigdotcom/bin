@@ -12,7 +12,10 @@ use Data::Dumper;
 use Getopt::Long;
 use IO::File;
 
-our $VERSION = '0.3';
+my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
+my @notefiles = split ':', $nf;
+
+our $VERSION = '0.4';
 
 my $title      = '';
 my $edit       =  0;
@@ -20,8 +23,7 @@ my $word       =  0;
 my $add        =  0;
 my $help       =  0;
 
-my $notefile = "$ENV{HOME}/info/notes.txt";
-my $separator = '%%%';
+my $separator = "%%%\n";
 
 GetOptions(
     "title=s" => \$title,
@@ -54,48 +56,50 @@ sub errout {
 
 sub edit_notes {
     my $editor = $ENV{EDITOR} || 'vim';
-    system("$editor $notefile");
+    system("$editor $notefiles[0]");
 }
 
 sub search_note {
     my (@patterns) = @_;
 
-    my $ifh = IO::File->new( $notefile, '<' );
-    die if ( !defined $ifh );
+    my @notes;
+    for my $file (@notefiles) {
+        my $ifh = IO::File->new( $file, '<' );
+        die if ( !defined $ifh );
 
-    my $contents = do { local $/; <$ifh> };
+        my $contents = do { local $/; <$ifh> };
 
-    $ifh->close;
+        $ifh->close;
+        push @notes, split(/^$separator/m, $contents);
+    }
 
-    my @notes = split /^$separator/m, $contents;
-
-    my @lines;
+    my %matches;
     OUTER: for (@notes) {
         for my $pattern (@patterns) {
             next OUTER unless /$pattern/i;
         }
         s/^/  /mg;
-        push @lines, "$_";
+        $matches{$_}++;
     }
-    my $output_separator = '+' . '=' x 78 . "\n|";
-    if (@lines) {
-        my $output = join( "$output_separator\n", @lines );
-        if ( @lines == 1 ) {
+    my $output_separator = '+' . '=' x 78 . "\n|\n";
+    if (%matches) {
+        for my $match (keys %matches) {
+            print $output_separator, $match;
+
             my $cfh = IO::File->new('/dev/clipboard', '>');
+
             if (defined $cfh) {
-                print $cfh "$output";
+                print $cfh "$match";
                 $cfh->close;
             }
-
         }
-        print $output;
     }
     else {
         print "No match.\n";
     }
 }
 
-sub make_note {
+sub add_note {
     print "Make note:\n";
 
     my $note;
@@ -103,7 +107,7 @@ sub make_note {
         $note .= $_;
     }
 
-    my $ofh = IO::File->new( $notefile, '>>' );
+    my $ofh = IO::File->new( $notefiles[0], '>>' );
     die if ( !defined $ofh );
 
     print $ofh "${separator}${note}\n";
@@ -123,7 +127,7 @@ sub main {
         search_note(@patterns);
     }
     elsif ($add) {
-        make_note();
+        add_note();
     }
     else {
         die usage();
