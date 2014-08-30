@@ -6,7 +6,7 @@ UTIL=~/.utility
 FILE=$UTIL/ip_address
 FILE1=$UTIL/ip_address1
 h=$(/bin/hostname)
-DROPFILE=~/Dropbox_info/${h}_ip
+DROPFILE=~/info/${h}_ip
 
 if [ -d /cygdrive ]; then
     /cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1

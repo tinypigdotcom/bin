@@ -1,5 +1,5 @@
 # purpose: update a heartbeat file in Dropbox
 set -x
 h=$(/bin/hostname)
-DROPFILE=~/Dropbox_info/${h}_heartbeat
+DROPFILE=~/info/${h}_heartbeat
 date >$DROPFILE
