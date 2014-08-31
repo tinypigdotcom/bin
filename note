@@ -18,7 +18,7 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 
 my $title      = '';
 my $edit       =  0;
@@ -110,15 +110,19 @@ sub search_note {
 sub add_note {
     print "Make note:\n";
 
+    my $note_title = "$title\n";
     my $note;
-    while (<STDIN>) {
-        $note .= $_;
+    while (my $input_line = <STDIN>) {
+        $note .= $input_line;
+        if ( $note_title !~ /\w/ && $input_line =~ /\w/ ) {
+            $note_title = $input_line;
+        }
     }
 
     my $ofh = IO::File->new( $notefiles[0], '>>' );
     die if ( !defined $ofh );
 
-    print $ofh "${separator}${note}\n";
+    print $ofh "${separator}${note_title}${note}\n";
     $ofh->close;
 }
 
