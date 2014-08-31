@@ -18,7 +18,7 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
 my $title      = '';
 my $edit       =  0;
@@ -87,14 +87,16 @@ sub search_note {
             my @lines = split "\n", $match;
             my $title = shift @lines;
             $title =~ s/^\s*//;
-            print $output_separator;
-            print " $title";
-            print $title_separator;
-            print join "\n", @lines;
+            my $body = join "\n", @lines;
+            $body =~ s/\s*$//s;
+            print $output_separator,
+                  " $title",
+                  $title_separator,
+                  $body, "\n";
 
             my $cfh = IO::File->new('/dev/clipboard', '>');
             if (defined $cfh) {
-                print $cfh "$match";
+                print $cfh $body;
                 $cfh->close;
             }
         }
@@ -123,21 +125,12 @@ sub add_note {
 sub main {
     my (@patterns) = @_;
 
-    if ($help) {
-        die usage();
-    }
-    elsif ($edit) {
-        edit_notes();
-    }
-    elsif (@patterns) {
-        search_note(@patterns);
-    }
-    elsif ($add) {
-        add_note();
-    }
-    else {
-        die usage();
-    }
+    if    ($help)     { die usage()              }
+    elsif ($edit)     { edit_notes()             }
+    elsif (@patterns) { search_note( @patterns ) }
+    elsif ($add)      { add_note()               }
+    else              { die usage()              }
+
     return;
 }
 
