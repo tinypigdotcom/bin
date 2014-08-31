@@ -42,14 +42,9 @@ Usage: note [OPTION]... PATTERN...
 Add or retrieve a note
 Example: note lawnmower
 
-Flags for add:
 -a, --add       Add a note
 -t, --title     Title for the note being added
-
-Flags for search:
 -w, --word      Only find if PATTERN is a word
-
-Other flags:
 -e, --edit      Edit the notes file
 EOF
 }
