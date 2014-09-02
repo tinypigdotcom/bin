@@ -129,7 +129,7 @@ use IO::File;
 use Storable;
 use Hash::Util qw(lock_keys);
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 our $VAR1;
 
 exit main( $0, @ARGV );
@@ -280,8 +280,8 @@ sub derange {
 }
 
 sub pcopy {
-    my ($g) = @_;
-    my ( $from, $to, $delete_flag ) = @{ $g->{args} };
+    my ( $g, $delete_flag ) = @_;
+    my ( $from, $to ) = @{ $g->{args} };
     my $projects = $g->{data}->{projects};
 
     $projects->{$to} = clone( $projects->{$from} );
@@ -679,16 +679,29 @@ sub main {
     elsif ( -r $g->{legacy_infile} ) {
         $g->{data} = retrieve( $g->{legacy_infile} );
     }
-    else { $g->{data} = {} }
+    else {
+        $g->{data} = {
+            'current'  => 'a',
+            'projects' => {
+                'a' => {
+                    'files'    => {
+                        't' => '/tmp/a.dmb',
+                    },
+                    'commands' => {},
+                    'label'    => 'placeholder',
+                },
+            },
+        };
+    }
     init($g);
 
     if ( $g->{prog} eq 'cp' ) {
-        pcopy( $args[0], $args[1], $g );
+        pcopy( $g );
     }
 
     if ( $g->{prog} eq 'mv' ) {
         my $delete_flag = 1;
-        pcopy( $args[0], $args[1], $delete_flag, $g );
+        pcopy( $g, $delete_flag );
     }
 
     if ( $g->{prog} eq 'zdir' ) { zdir($g) }
