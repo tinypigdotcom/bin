@@ -18,7 +18,7 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 my $title      = '';
 my $edit       =  0;
@@ -82,6 +82,7 @@ sub search_note {
     }
     my $output_separator = "\n" . '+' . '=' x 78 . "\n|";
     my $title_separator  = "\n" . '+' . '-' x 68 . "\n";
+    my $gpg_file = "$ENV{HOME}/.note.gpg";
     if (%matches) {
         for my $match (keys %matches) {
             my @lines = split "\n", $match;
@@ -91,13 +92,24 @@ sub search_note {
             $body =~ s/\s*$//s;
             print $output_separator,
                   " $title",
-                  $title_separator,
-                  $body, "\n";
-
-            my $cfh = IO::File->new('/dev/clipboard', '>');
-            if (defined $cfh) {
-                print $cfh $body;
-                $cfh->close;
+                  $title_separator;
+            if ($body =~ /BEGIN PGP MESSAGE.*END PGP MESSAGE/s) {
+                my $ofh = IO::File->new($gpg_file, '>');
+                die if (!defined $ofh);
+                $body =~ s/^ *//mg;
+                print $ofh $body;
+                $ofh->close;
+                if ( -r $gpg_file ) {
+                    system("gpg --decrypt $gpg_file && rm $gpg_file");
+                }
+            }
+            else {
+                print $body, "\n";
+                my $cfh = IO::File->new('/dev/clipboard', '>');
+                if (defined $cfh) {
+                    print $cfh $body;
+                    $cfh->close;
+                }
             }
         }
         print "\n";
