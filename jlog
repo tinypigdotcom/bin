@@ -6,22 +6,36 @@ use 5.14.0;
 use autodie;
 use warnings;
 
-use DateTime::Duration;
-use DateTime::Format::Duration;
+our $VERSION = '0.02';
 
-my $dur = DateTime::Duration->new();
+my $hours = 0;
+my $minutes = 0;
+my $seconds = 0;
 
-my $d = DateTime::Format::Duration->new(
-    pattern   => '%r',
-    normalize => 1,
-);
+sub get_subtotal {
+    $minutes += $seconds / 60;
+    $seconds = $seconds % 60;
+    $hours += $minutes / 60;
+    $minutes = $minutes % 60;
+    return sprintf("%3d:%02d:%02d",$hours,$minutes,$seconds);
+}
+
+sub clear_subtotal {
+    $hours = $minutes = $seconds = 0;
+}
+
+sub add_times {
+    my ($h,$m,$s) = @_;
+    $hours += $h;
+    $minutes += $m;
+    $seconds += $s;
+}
 
 while (<>) {
     chomp;
     if ( $_ eq '' ) {
-        say $d->format_duration($dur) . " SUBTOTAL\n";
-
-        $dur = DateTime::Duration->new();
+        print get_subtotal() . " SUBTOTAL\n\n";
+        clear_subtotal();
     }
     else {
         my $orig = $_;
@@ -30,13 +44,9 @@ while (<>) {
         my @hm = split ':';
         $_ = join ':', @hm;
 
-        $dur = $dur + DateTime::Duration->new(
-            hours   => $hm[0],
-            minutes => $hm[1],
-            seconds => $hm[2],
-        );
+        add_times(@hm);
 
-        say "$orig";
+        print " $orig\n";
     }
 }
 
