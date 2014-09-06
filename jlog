@@ -6,18 +6,29 @@ use 5.14.0;
 use autodie;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my $hours = 0;
 my $minutes = 0;
 my $seconds = 0;
 
 sub get_subtotal {
-    $minutes += $seconds / 60;
+    $minutes += int($seconds / 60);
     $seconds = $seconds % 60;
-    $hours += $minutes / 60;
+    $hours += int($minutes / 60);
     $minutes = $minutes % 60;
-    return sprintf("%3d:%02d:%02d",$hours,$minutes,$seconds);
+    my $print_minutes = '  ';
+    my $print_hours   = '    ';
+    my $print_seconds = sprintf(":%02d",$seconds);
+    if ( $minutes > 0 ) {
+        $print_minutes = sprintf("%2d",$minutes);
+    }
+    if ( $hours > 0 ) {
+        $print_minutes = sprintf("%02d",$minutes);
+        $print_hours =  sprintf("%3d:",$hours);
+    }
+    my $print_subtotal = "$print_hours$print_minutes$print_seconds";
+    return $print_subtotal;
 }
 
 sub clear_subtotal {
@@ -34,6 +45,7 @@ sub add_times {
 while (<>) {
     chomp;
     if ( $_ eq '' ) {
+        print "------------------\n";
         print get_subtotal() . " SUBTOTAL\n\n";
         clear_subtotal();
     }
