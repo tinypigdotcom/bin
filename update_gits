@@ -22,10 +22,10 @@ else
     ONE_WEEK=$(expr 60 \* 60 \* 24 \* 7)
     NOW=$(date +%s)
 
-    MOD_EPOCH=$(stat -c %W $GITLIST)
+    MOD_EPOCH=$(stat -c %Y $GITLIST)
     DIFF=$(expr $NOW - $MOD_EPOCH)
 
-    MOD_DATE=$(stat -c %w $GITLIST)
+    MOD_DATE=$(stat -c %y $GITLIST)
     MOD_DATE=${MOD_DATE%%.*}
 
     STALE=
