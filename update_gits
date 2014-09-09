@@ -46,6 +46,7 @@ if [ -n "$REASON" ]; then
     find $ROOT_DIR -type d -name .git 2>/dev/null | while read a
     do
         cd "$a/.."
+        mv upd_skip $SKIPFILE 2>/dev/null # remove after all upgraded
         if [ -f $SKIPFILE ]; then
             echo "(skipping $a)"
             continue
@@ -58,6 +59,7 @@ fi
 while read a
 do
     cd "$a/.."
+    mv upd_skip $SKIPFILE 2>/dev/null # remove after all upgraded
 
     if [ -f $SKIPFILE ]; then
         echo "(skipping $a)"
