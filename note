@@ -58,6 +58,12 @@ sub edit_notes {
     system("$editor $paths");
 }
 
+my @output_lines;
+sub output {
+    my $output_line = join('',@_);
+    push @output_lines, $output_line;
+}
+
 sub search_note {
     my (@patterns) = @_;
 
@@ -90,9 +96,9 @@ sub search_note {
             $title =~ s/^\s*//;
             my $body = join "\n", @lines;
             $body =~ s/\s*$//s;
-            print $output_separator,
-                  " $title",
-                  $title_separator;
+            output $output_separator,
+                   " $title",
+                   $title_separator;
             if ($body =~ /BEGIN PGP MESSAGE.*END PGP MESSAGE/s) {
                 my $ofh = IO::File->new($gpg_file, '>');
                 die if (!defined $ofh);
@@ -104,7 +110,7 @@ sub search_note {
                 }
             }
             else {
-                print $body, "\n";
+                output $body, "\n";
                 my $cfh = IO::File->new('/dev/clipboard', '>');
                 if (defined $cfh) {
                     print $cfh $body;
@@ -112,11 +118,14 @@ sub search_note {
                 }
             }
         }
-        print "\n";
+        output "\n";
     }
     else {
-        print "No match.\n";
+        output "No match.\n";
     }
+    open O, '| less -FX' or die;
+    print O @output_lines;
+    close O;
 }
 
 sub add_note {
