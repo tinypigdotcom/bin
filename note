@@ -1,12 +1,15 @@
 #!/usr/bin/perl
 
 # TODO
+# * allow for title search
 # * implement tags
 # * implement delete entry
 # * implement edit individual entry
-# * Implement word option
-# * Differentiate title and allow for title search
 # * allow input from file
+
+# DONE
+# * -1 and -2 switch for which note file to use
+# * Implement word option
 
 use strict;
 use warnings FATAL => 'all';
@@ -18,23 +21,30 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.8';
+our $VERSION = '0.9';
 
-my $title      = '';
-my $edit       =  0;
-my $word       =  0;
-my $add        =  0;
-my $help       =  0;
+my $one   = '';
+my $two   = '';
+my $title = '';
+my $edit  =  0;
+my $word  =  0;
+my $add   =  0;
+my $help  =  0;
 
 my $separator = "%%%\n";
 
 GetOptions(
-    "title=s" => \$title,
+    "1"       => \$one,
+    "2"       => \$two,
+    "title"   => \$title,
     "word"    => \$word,
     "add"     => \$add,
     "help"    => \$help,
     "edit"    => \$edit,
 ) or die("Error in command line arguments\n");
+
+@notefiles = $notefiles[0] if $one;
+@notefiles = $notefiles[1] if $two;
 
 sub usage {
     return <<EOF;
@@ -42,6 +52,8 @@ Usage: note [OPTION]... PATTERN...
 Add or retrieve a note
 Example: note lawnmower
 
+-1, --1         use notefile #1
+-2, --2         use notefile #2
 -a, --add       Add a note
 -t, --title     Title for the note being added
 -w, --word      Only find if PATTERN is a word
@@ -66,6 +78,15 @@ sub output {
 
 sub search_note {
     my (@patterns) = @_;
+
+    if ( $word ) {
+        for (@patterns) {
+            $_ = "\\b$_\\b";
+        }
+    }
+
+    if ( $title ) {
+    }
 
     my @notes;
     for my $file (@notefiles) {
