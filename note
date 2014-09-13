@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
 # TODO
-# * allow for title search
+
+# MAYBE TODO
+# * implement "library" like notebook in evernote
 # * implement tags
 # * implement delete entry
 # * implement edit individual entry
@@ -10,6 +12,7 @@
 # DONE
 # * -1 and -2 switch for which note file to use
 # * Implement word option
+# * allow for title search
 
 use strict;
 use warnings FATAL => 'all';
@@ -21,7 +24,7 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.9';
+our $VERSION = '0.8';
 
 my $one   = '';
 my $two   = '';
@@ -30,6 +33,7 @@ my $edit  =  0;
 my $word  =  0;
 my $add   =  0;
 my $help  =  0;
+my $threshold = 10;
 
 my $separator = "%%%\n";
 
@@ -86,6 +90,9 @@ sub search_note {
     }
 
     if ( $title ) {
+        for (@patterns) {
+            $_ = "^[^\\x0a\\x0d]*$_";
+        }
     }
 
     my @notes;
@@ -111,6 +118,15 @@ sub search_note {
     my $title_separator  = "\n" . '+' . '-' x 68 . "\n";
     my $gpg_file = "$ENV{HOME}/.note.gpg";
     if (%matches) {
+        my $total_matches = scalar keys %matches;
+        if ( $total_matches > $threshold ) {
+            print "Found $total_matches matches. Continue (Y/n) ? ";
+            my $junk = <STDIN>;
+            chomp $junk;
+            if ( $junk =~ /n/i ) {
+                exit;
+            }
+        }
         for my $match (keys %matches) {
             my @lines = split "\n", $match;
             my $title = shift @lines;
@@ -150,31 +166,26 @@ sub search_note {
 }
 
 sub add_note {
-    print "Make note:\n";
-
-    my $note_title = "$title\n";
     my $note;
     while (my $input_line = <STDIN>) {
         $note .= $input_line;
-        if ( $note_title !~ /\w/ && $input_line =~ /\w/ ) {
-            $note_title = $input_line;
-        }
     }
 
     my $ofh = IO::File->new( $notefiles[0], '>>' );
     die if ( !defined $ofh );
 
-    print $ofh "${separator}${note_title}${note}\n";
+    print $ofh "${separator}${note}\n";
     $ofh->close;
+    print STDERR "*** 1 note added to $notefiles[0]\n";
 }
 
 sub main {
     my (@patterns) = @_;
 
     if    ($help)     { die usage()              }
+    elsif ($add)      { add_note()               }
     elsif ($edit)     { edit_notes()             }
     elsif (@patterns) { search_note( @patterns ) }
-    elsif ($add)      { add_note()               }
     else              { die usage()              }
 
     return;
