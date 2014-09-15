@@ -121,7 +121,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Carp;
-use Clone qw(clone);
+use Storable qw(dclone);
 use Cwd;
 use Data::Dumper;
 use File::Basename;
@@ -129,7 +129,7 @@ use IO::File;
 use Storable;
 use Hash::Util qw(lock_keys);
 
-our $VERSION = '0.3';
+our $VERSION = '0.4';
 our $VAR1;
 
 exit main( $0, @ARGV );
@@ -284,7 +284,7 @@ sub pcopy {
     my ( $from, $to ) = @{ $g->{args} };
     my $projects = $g->{data}->{projects};
 
-    $projects->{$to} = clone( $projects->{$from} );
+    $projects->{$to} = dclone( $projects->{$from} );
     if ($delete_flag) {
         delete $projects->{$from};
     }
