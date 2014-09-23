@@ -10,7 +10,7 @@ use DateTime::Duration;
 use DateTime::Format::Duration;
 use IO::File;
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 my $mdy;
 
@@ -123,13 +123,10 @@ for my $file (@files) {
     $work_item =~ s/[\x0a\x0d]//msg;
     if (    $current_month == $item_month
         and $current_day == $item_day
-        and $current_year == $item_year
-        and $work_item ne $previous_work_item )
+        and $current_year == $item_year )
     {
         output("$mdy$item_hour:$item_minute:$item_second...$work_item\n");
         push @remove, $full_path;
-
-        $previous_work_item = $work_item;
     }
 }
 
