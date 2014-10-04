@@ -102,10 +102,10 @@ do
 
 done <$GITLIST
 
-cmp ~/.vimrc ~/.vim/_vimrc
-diff ~/.vimrc ~/.vim/_vimrc
-cmp ~/.bash_profile ~/bin/_bash_profile
-diff ~/.bash_profile ~/bin/_bash_profile
+cmp $HOME/.vimrc $HOME/.vim/_vimrc
+diff $HOME/.vimrc $HOME/.vim/_vimrc
+cmp $HOME/.bash_profile $HOME/bin/_bash_profile
+diff $HOME/.bash_profile $HOME/bin/_bash_profile
 echo
 echo -n "Finished "
 date +'%F %T'
