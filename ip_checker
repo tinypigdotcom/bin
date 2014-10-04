@@ -2,16 +2,21 @@
 # purpose: keep file on Dropbox updated with this machine's current IP
 
 set -x
-UTIL=~/.utility
+UTIL=$HOME/.utility
 FILE=$UTIL/ip_address
 FILE1=$UTIL/ip_address1
 h=$(/bin/hostname)
-DROPFILE=~/info/${h}_ip
+DROPFILE=$HOME/info/${h}_ip
 
 if [ -d /cygdrive ]; then
     /cygdrive/c/WINDOWS/system32/ipconfig | perl -ne '/IP Address/ && s/\D*(\d)/$1/ && print' >$FILE1
 else
     ifconfig -a | perl -ne '/Bcast/ && s/\D*([\d\.]+).*/$1/ && print' >$FILE1
+fi
+
+if [ ! -f "$FILE" -a ! -f "$FILE1" ]; then
+    echo one >$FILE
+    echo two >$FILE1
 fi
 
 if [ -f "$FILE" -a -f "$FILE1" ]; then
@@ -24,5 +29,9 @@ if [ -f "$FILE" -a -f "$FILE1" ]; then
     fi
 else
     cp $FILE1 $FILE
+fi
+
+if [ ! -f "$DROPFILE" ]; then
+    cp $FILE $DROPFILE
 fi
 
