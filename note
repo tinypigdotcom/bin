@@ -24,7 +24,7 @@ use IO::File;
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
 
-our $VERSION = '0.8';
+our $VERSION = '0.9';
 
 my $one   = '';
 my $two   = '';
@@ -127,6 +127,7 @@ sub search_note {
                 exit;
             }
         }
+        my $content;
         for my $match (keys %matches) {
             my @lines = split "\n", $match;
             my $title = shift @lines;
@@ -136,6 +137,11 @@ sub search_note {
             output $output_separator,
                    " $title",
                    $title_separator;
+            $content='';
+            if ($body =~ s/[[]<(.*)>[]]/$1/sg) {
+                $content = $1;
+                print "content {$content}\n";
+            }
             if ($body =~ /BEGIN PGP MESSAGE.*END PGP MESSAGE/s) {
                 my $ofh = IO::File->new($gpg_file, '>');
                 die if (!defined $ofh);
@@ -150,7 +156,8 @@ sub search_note {
                 output $body, "\n";
                 my $cfh = IO::File->new('/dev/clipboard', '>');
                 if (defined $cfh) {
-                    print $cfh $body;
+                    my $to_copy = $content || $body;
+                    print $cfh $to_copy;
                     $cfh->close;
                 }
             }
