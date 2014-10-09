@@ -1,0 +1,7 @@
+# purpose: note to self
+
+VERSION=0.0.1
+
+OUTFILE=$HOME/.nnotes
+less $OUTFILE
+
