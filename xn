@@ -1,0 +1,10 @@
+# purpose: email xvn style note
+set -x
+
+VERSION=0.0.1
+
+INBOX_PATH=/cygdrive/c/Dropbox/dmb/email
+OUTFILE="$INBOX_PATH/$*"
+
+echo >"$OUTFILE"
+
