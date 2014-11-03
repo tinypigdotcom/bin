@@ -121,29 +121,74 @@ use strict;
 use warnings FATAL => 'all';
 
 use Carp;
-use Storable qw(dclone);
 use Cwd;
 use Data::Dumper;
 use File::Basename;
-use IO::File;
-use Storable;
 use Hash::Util qw(lock_keys);
+use IO::File;
+use Storable qw(dclone);
+use Storable;
 
-our $VERSION = '0.4';
+my $separator = "%%%\n";
+my $g;
+
+our $VERSION = '0.5';
 our $VAR1;
+
+my $max_prev_projects = 50;
 
 exit main( $0, @ARGV );
 
+sub set_current_project {
+    my ($to) = @_;
+    push @{$g->{data}->{previous}}, $g->{data}->{current};
+    while ( scalar @{$g->{data}->{previous}} > $max_prev_projects ) {
+        shift @{$g->{data}->{previous}};
+    }
+    $g->{data}->{current} = $to;
+    print "Current project is now: $to\n";
+}
+
+sub unset_current_project {
+    $g->{data}->{current} = '';
+}
+
+sub is_valid_project {
+    my ($project) = @_;
+    if ( exists $g->{data}->{projects}->{$project} ) {
+        return 1;
+    }
+    return;
+}
+
+sub go_previous_project {
+    my $prev = pop @{$g->{data}->{previous}};
+    while (defined $prev) {
+        if ( is_valid_project($prev) ) {
+            set_current_project($prev);
+            return;
+        }
+        $prev = pop @{$g->{data}->{previous}};
+    }
+
+    for my $project (keys %{$g->{data}->{projects}}) {
+        if ( is_valid_project($project) ) {
+            set_current_project($project);
+            return;
+        }
+    }
+
+    unset_current_project();
+    return;
+}
+
 sub pfreeze {
-    my ($g) = @_;
-    envwrite($g);
-    dump_write($g);
+    envwrite();
+    dump_write();
     return;
 }
 
 sub dump_read {
-    my ($g) = @_;
-
     my $ifh = IO::File->new($g->{infile}, '<');
     croak if (!defined $ifh);
 
@@ -158,8 +203,6 @@ sub dump_read {
 }
 
 sub dump_write {
-    my ($g) = @_;
-
     my $ofh = IO::File->new($g->{infile}, '>');
     croak if (!defined $ofh);
 
@@ -169,8 +212,6 @@ sub dump_write {
 }
 
 sub envwrite {
-    my ($g) = @_;
-
     my $ofh = IO::File->new( "$ENV{HOME}/.penv", '>' );
     croak if ( !defined $ofh );
 
@@ -217,25 +258,27 @@ sub fix {
 #        };
 
 sub init {
-    my ($g) = @_;
-    $g->{current} = $g->{data}->{current};
-    if ( !$g->{data}->{projects}->{ $g->{current} }->{files} ) {
-        $g->{data}->{projects}->{ $g->{current} }->{files} = {};
+    my $current = $g->{data}->{current};
+    $g->{current} = $current;
+    if ( $current ) {
+        if ( !$g->{data}->{projects}->{ $g->{current} }->{files} ) {
+            $g->{data}->{projects}->{ $g->{current} }->{files} = {};
+        }
+        if ( !$g->{data}->{projects}->{ $g->{current} }->{commands} ) {
+            $g->{data}->{projects}->{ $g->{current} }->{commands} = {};
+        }
+        $g->{files} = $g->{data}->{projects}->{ $g->{current} }->{files};
+        $g->{cmds}  = $g->{data}->{projects}->{ $g->{current} }->{commands};
     }
-    if ( !$g->{data}->{projects}->{ $g->{current} }->{commands} ) {
-        $g->{data}->{projects}->{ $g->{current} }->{commands} = {};
-    }
-    $g->{files} = $g->{data}->{projects}->{ $g->{current} }->{files};
-    $g->{cmds}  = $g->{data}->{projects}->{ $g->{current} }->{commands};
     return;
 }
 
 sub del {
-    my ( $ar, $dr, $g ) = @_;
+    my ( $ar, $dr ) = @_;
     for ( @{$ar} ) {
         delete $dr->{$_};
     }
-    pfreeze($g);
+    pfreeze();
     return;
 }
 
@@ -280,7 +323,7 @@ sub derange {
 }
 
 sub pcopy {
-    my ( $g, $delete_flag ) = @_;
+    my ( $delete_flag ) = @_;
     my ( $from, $to ) = @{ $g->{args} };
     my $projects = $g->{data}->{projects};
 
@@ -288,16 +331,15 @@ sub pcopy {
     if ($delete_flag) {
         delete $projects->{$from};
     }
-    $g->{data}->{current} = $to;
+    set_current_project($to);
     $g->{prog} = 'f';
     @{ $g->{args} } = ();
-    init($g);
-    pfreeze($g);
+    init();
+    pfreeze();
     return;
 }
 
 sub zdir {
-    my ($g) = @_;
     my $key = $g->{args}->[0];
 
     return if ( !$key );
@@ -317,45 +359,75 @@ sub zdir {
     return;
 }
 
+sub list_projects {
+    my $projects = $g->{data}->{projects};
+    print "Projects:\n";
+    for ( sort keys %{ $projects } ) {
+        my $asterisk = ( $_ eq $g->{current} ) ? '*' : ' ';
+        my $label = $projects->{$_}->{label};
+        $label //= '';
+        printf "$asterisk %-10s %-15s\n", $_, $label;
+    }
+}
+
+sub search {
+    my $arg = $g->{args}->[0];
+    $arg //= '';
+    my $projects = $g->{data}->{projects};
+    print "Projects:\n";
+    OUTER:
+    for ( sort keys %{ $projects } ) {
+        my $asterisk = ( $_ eq $g->{current} ) ? '*' : ' ';
+        my $label = $projects->{$_}->{label};
+        $label //= '';
+        my $project_text = "$_, $label";
+        for (@{$g->{args}}) {
+            if ( $project_text !~ /$_/ ) {
+                next OUTER;
+            }
+        }
+        printf "$asterisk %-10s %-15s\n", $_, $label;
+    }
+}
+
 sub func_p {
-    my ($g) = @_;
     my $arg = $g->{args}->[0];
     $arg //= '';
     my $projects = $g->{data}->{projects};
 
     my ( $cmd, $proj ) = ( $arg =~ /(.)(.*)/ );
-    if ( defined $cmd && $cmd eq '-' ) {
+    if ( defined $cmd && $cmd eq '?' ) {
+        $g->{args}->[0] =~ s/^.//;
+        search();
+    }
+    elsif ( defined $cmd && $cmd eq '-' ) {
+        delete $projects->{$proj};
         if ( $proj eq $g->{current} ) {
-            print STDERR "Can't remove current project.\n";
+            go_previous_project();
         }
-        else {
-            delete $projects->{$proj};
-            pfreeze($g);
-        }
+        pfreeze();
     }
     elsif ( !$arg ) {
-        print "Projects:\n";
-        for ( sort keys %{ $projects } ) {
-            print( ( $_ eq $g->{current} ) ? '*' : ' ' );
-            my $label = $projects->{$_}->{label};
-            $label //= '';
-            printf " %-10s %-15s\n", $_, $label;
-        }
+        list_projects();
     }
     else {
-        $g->{data}->{current} = $arg;
+        set_current_project($arg);
         $projects->{$arg}->{label} = $g->{args}->[1]
           if ( $g->{args}->[1] );
-        init($g);
+        init();
         $g->{prog} = 'f';
         @{ $g->{args} } = ();
-        pfreeze($g);
+        pfreeze();
     }
     return;
 }
 
 sub func_f {
-    my ($g) = @_;
+    if ( !$g->{current} ) {
+        print "Must set current project first.\n";
+        return;
+    }
+
     my $na  = scalar @{ $g->{args} };
     my @x   = @{ $g->{args} };
 
@@ -369,7 +441,7 @@ sub func_f {
         if ( $g->{prog} eq 'fa' ) { @l = keys %{ $g->{files} } }
         if ( $l[0] eq '-' ) {    # Delete labels
             shift @l;
-            del( \@l, $g->{files}, $g );
+            del( \@l, $g->{files} );
         }
         else {                   # Edit files
             for (@l) {
@@ -394,7 +466,7 @@ sub func_f {
         if ( $g->{h_ident}->{ $x[0] } ) {
             if ( -r $file ) {
                 $g->{files}->{ $x[0] } = $file;
-                pfreeze($g);
+                pfreeze();
             }
             else {
                 print STDERR "Can't read: $file\n";
@@ -421,7 +493,7 @@ sub func_f {
                 print STDERR "Can't read: $file\n";
             }
         }
-        pfreeze($g);
+        pfreeze();
     }
     else {    # Error/Print list of files
         if ( $na != 0 ) {
@@ -450,7 +522,11 @@ sub func_f {
 }
 
 sub func_x {
-    my ($g)   = @_;
+    if ( !$g->{current} ) {
+        print "Must set current project first.\n";
+        return;
+    }
+
     my $na    = scalar @{ $g->{args} };
     my @a     = @{ $g->{args} };
     my $f1    = 0;
@@ -474,7 +550,7 @@ sub func_x {
     if ( $na == 1 or $g->{prog} eq 'xa' or $flist ) {
         if ( $g->{prog} eq 'xa' ) { @l = keys %{ $g->{cmds} } }
         if ( $g_2 eq '-' ) {    # Delete labels
-            del( \@l, $g->{cmds}, $g );
+            del( \@l, $g->{cmds} );
         }
         elsif ( $g_2 eq '.' ) {    # Edit commands
             my $f = '';
@@ -515,7 +591,7 @@ sub func_x {
                     $ifh->close;
                     unlink $temp;
                 }
-                pfreeze($g);
+                pfreeze();
 
             }
             else {
@@ -559,7 +635,7 @@ sub func_x {
         if ( $g->{h_ident}->{ $a[0] } ) {    # Add command to specific label
             $g->{cmds}->{ $a[0] }->{cmd} = $a[1];
             $g->{cmds}->{ $a[0] }->{label} = $a[2] || '';
-            pfreeze($g);
+            pfreeze();
         }
         elsif ( $a[0] eq ',' ) {             # Add command to generic label
             for my $i ( @{ $g->{a_ident} } ) {
@@ -569,7 +645,7 @@ sub func_x {
                     last;
                 }
             }
-            pfreeze($g);
+            pfreeze();
         }
         else {                               # Error
             print STDERR "Invalid identifier: $a[0]\n";
@@ -594,7 +670,6 @@ sub func_x {
 }
 
 sub func_z {
-    my ($g) = @_;
     print fix(4,<<"    EOF"), "\n";
     Dave's Development System v$VERSION
     Help commands:
@@ -627,10 +702,29 @@ sub func_z {
     return;
 }
 
+
+sub usage {
+    return <<EOF;
+Usage: note [OPTION]... PATTERN...
+Add or retrieve a note
+Example: note lawnmower
+
+-l [library], --library=[library] Search a specific library
+-1, --1         use notefile #1
+-2, --2         use notefile #2
+-a, --add       Add a note
+-t, --title     Search title only
+-w, --word      Only find if PATTERN is a word
+-e, --edit      Edit the notes file
+-v, --verbose   Show additional information about entries matched / not matched
+EOF
+}
+
+
 sub main {
     my ( $prog, @args ) = @_;
 
-    my $g      = {};
+    $g = {};
     my @g_keys = qw(
       a_ident
       args
@@ -648,7 +742,7 @@ sub main {
 
     $g->{args}          = \@args;
     $g->{legacy_infile} = "$ENV{HOME}/.prc";
-    $g->{infile}        = "$ENV{HOME}/.pdump";
+    $g->{infile}        = $ENV{PDUMP} || "$ENV{HOME}/.pdump";
 
     my @ident = ( 0 .. 9, 'a' .. 'z', 'A' .. 'Z' );
 
@@ -674,45 +768,37 @@ sub main {
     $g->{prog} = $prog;
 
     if ( -e $g->{infile} ) {
-        dump_read($g);
+        dump_read();
     }
     elsif ( -r $g->{legacy_infile} ) {
         $g->{data} = retrieve( $g->{legacy_infile} );
     }
     else {
         $g->{data} = {
-            'current'  => 'a',
-            'projects' => {
-                'a' => {
-                    'files'    => {
-                        't' => '/tmp/a.dmb',
-                    },
-                    'commands' => {},
-                    'label'    => 'placeholder',
-                },
-            },
+            'current'  => '',
+            'projects' => {},
         };
     }
-    init($g);
+    init();
 
     if ( $g->{prog} eq 'cp' ) {
-        pcopy( $g );
+        pcopy( );
     }
 
     if ( $g->{prog} eq 'mv' ) {
         my $delete_flag = 1;
-        pcopy( $g, $delete_flag );
+        pcopy( $delete_flag );
     }
 
-    if ( $g->{prog} eq 'zdir' ) { zdir($g) }
+    if ( $g->{prog} eq 'zdir' ) { zdir() }
 
-    if ( $g->{prog} eq 'p' ) { func_p($g) }
+    if ( $g->{prog} eq 'p' ) { func_p() }
 
-    if ( $g->{prog} eq 'f' or $g->{prog} eq 'fa' ) { func_f($g) }
+    if ( $g->{prog} eq 'f' or $g->{prog} eq 'fa' ) { func_f() }
 
-    if ( $g->{prog} eq 'x' or $g->{prog} eq 'xa' ) { func_x($g) }
+    if ( $g->{prog} eq 'x' or $g->{prog} eq 'xa' ) { func_x() }
 
-    if ( $g->{prog} eq 'z' ) { func_z($g) }
+    if ( $g->{prog} eq 'z' ) { func_z() }
 
     return 0;
 }
