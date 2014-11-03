@@ -146,7 +146,6 @@ sub set_current_project {
         shift @{$g->{data}->{previous}};
     }
     $g->{data}->{current} = $to;
-    print "Current project is now: $to\n";
 }
 
 sub unset_current_project {
