@@ -381,7 +381,7 @@ sub search {
         $label //= '';
         my $project_text = "$_, $label";
         for (@{$g->{args}}) {
-            if ( $project_text !~ /$_/ ) {
+            if ( $project_text !~ /$_/i ) {
                 next OUTER;
             }
         }
