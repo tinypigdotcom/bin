@@ -6,48 +6,58 @@ use 5.14.0;
 use autodie;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
-my $hours = 0;
-my $minutes = 0;
-my $seconds = 0;
+my %new_time_hash = (
+    hours   => 0,
+    minutes => 0,
+    seconds => 0,
+);
+my %total = %new_time_hash;
+my %subtotal = %new_time_hash;
+
+sub get_total {
+    return get_subtotal(\%total);
+}
 
 sub get_subtotal {
-    $minutes += int($seconds / 60);
-    $seconds = $seconds % 60;
-    $hours += int($minutes / 60);
-    $minutes = $minutes % 60;
+    my ($ref) = @_;
+    $ref->{minutes} += int($ref->{seconds} / 60);
+    $ref->{seconds} = $ref->{seconds} % 60;
+    $ref->{hours} += int($ref->{minutes} / 60);
+    $ref->{minutes} = $ref->{minutes} % 60;
     my $print_minutes = '  ';
     my $print_hours   = '    ';
-    my $print_seconds = sprintf(":%02d",$seconds);
-    if ( $minutes > 0 ) {
-        $print_minutes = sprintf("%2d",$minutes);
+    my $print_seconds = sprintf(":%02d",$ref->{seconds});
+    if ( $ref->{minutes} > 0 ) {
+        $print_minutes = sprintf("%2d",$ref->{minutes});
     }
-    if ( $hours > 0 ) {
-        $print_minutes = sprintf("%02d",$minutes);
-        $print_hours =  sprintf("%3d:",$hours);
+    if ( $ref->{hours} > 0 ) {
+        $print_minutes = sprintf("%02d",$ref->{minutes});
+        $print_hours =  sprintf("%3d:",$ref->{hours});
     }
     my $print_subtotal = "$print_hours$print_minutes$print_seconds";
     return $print_subtotal;
 }
 
 sub clear_subtotal {
-    $hours = $minutes = $seconds = 0;
+    my ($ref) = @_;
+    %{$ref} = %new_time_hash;
 }
 
 sub add_times {
-    my ($h,$m,$s) = @_;
-    $hours += $h;
-    $minutes += $m;
-    $seconds += $s;
+    my ($ref,$h,$m,$s) = @_;
+    $ref->{hours} += $h;
+    $ref->{minutes} += $m;
+    $ref->{seconds} += $s;
 }
 
 while (<>) {
     chomp;
     if ( $_ eq '' ) {
         print "------------------\n";
-        print get_subtotal() . " SUBTOTAL\n\n";
-        clear_subtotal();
+        print get_subtotal(\%subtotal) . " SUBTOTAL\n\n";
+        clear_subtotal(\%subtotal);
     }
     else {
         my $orig = $_;
@@ -56,9 +66,13 @@ while (<>) {
         my @hm = split ':';
         $_ = join ':', @hm;
 
-        add_times(@hm);
+        add_times(\%subtotal,@hm);
+        add_times(\%total,@hm);
 
         print " $orig\n";
     }
 }
+
+print "==================\n";
+print get_total() . " TOTAL\n\n";
 
