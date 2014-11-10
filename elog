@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# purpose: print time card
+# purpose: edit time card
 
 use 5.16.0;
 
