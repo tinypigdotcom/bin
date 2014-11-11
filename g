@@ -39,7 +39,7 @@
 #
 
 # -------------------------- Data: map option letter to its associated command
-VERSION=1.1.1
+VERSION=1.1.2
 A='
 
 
@@ -53,7 +53,7 @@ A='
     m      git checkout master $*      # Master Checkout
     pd     git push origin develop $*  # Push Develop
     pm     git push origin master $*   # Push Master
-    r      git checkout $*             # Revert
+    rev    git checkout $*             # Revert
     s      git status -s $*            # Status
 
 
