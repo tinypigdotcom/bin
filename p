@@ -755,7 +755,7 @@ sub main {
     ($prog) = ( $prog =~ m!.*/(.*)! );
 
     if ( defined $args[0] ) {
-        if ( $args[0] eq '--help' or $args[0] eq '-?' or $args[0] eq '-h' ) {
+        if ( $args[0] eq '--help' ) {
             $prog = 'z';
         }
         elsif ( $prog eq 'p' ) {
