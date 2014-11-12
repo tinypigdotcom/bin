@@ -1,4 +1,4 @@
 # purpose: to update local .vimrc and .bash_profile
 set -x
 cp ~/.vim/_vimrc ~/.vimrc
-cp ~/bin/_bash_profile ~/.bash_profile
+cp ~/utility/_bash_profile ~/.bash_profile
