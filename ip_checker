@@ -1,6 +1,8 @@
 # inet addr:192.168.1.166  Bcast:192.168.1.255  Mask:255.255.255.0
 # purpose: keep file on Dropbox updated with this machine's current IP
 
+VERSION=0.0.1
+
 set -x
 UTIL=$HOME/.utility
 FILE=$UTIL/ip_address

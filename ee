@@ -1,6 +1,7 @@
 
 # purpose: edit file in your .utility directory
 
+VERSION=0.0.1
 BASENAME=`basename $0`
 
 usage() {

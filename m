@@ -22,6 +22,7 @@
 #
 
 # -------------------------- Data: map option letter to its associated command
+VERSION=0.0.1
 A="
 
 

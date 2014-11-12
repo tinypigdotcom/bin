@@ -5,6 +5,8 @@
 use strict;
 use warnings;
 
+our $VERSION = '0.0.1';
+
 open I, "lsb_release -a 2>/dev/null |" or die "Can't: $!";
 
 my $description;

@@ -4,6 +4,8 @@
 use warnings;
 use strict;
 
+our $VERSION = '0.0.1';
+
 my $vim=0;
 if ($ARGV[0] eq '-v') {
     $vim++;
