@@ -23,7 +23,7 @@ use File::Basename;
 use Getopt::Long;
 use IO::File;
 
-our $VERSION = '0.9.4';
+our $VERSION = '0.9.5';
 
 my $PROG = basename($0);
 my $ERR_EXIT = 2;
@@ -51,14 +51,14 @@ Add or retrieve a note
 Example: note lawnmower # retrieve any notes with the word lawnmower
 
   -h, --help                display this help text and exit
-  -V, --version             display version information and exit
+  -v, --version             display version information and exit
   -1, --1                   use notefile #1
   -2, --2                   use notefile #2
   -a, --add                 add a note
   -e, --edit                edit the notes file
   -l, --library=LIBRARY     Search a specific library
   -t, --title               search title only
-  -v, --verbose             show additional information about entries
+  -V, --verbose             show additional information about entries
                             matched / not matched
   -w, --word                only find if PATTERN is a word
 EOF
@@ -83,8 +83,8 @@ my $two       = '';
 my $title     = '';
 my $library   = '';
 my $edit      =  0;
-my $verbose   =  0;
-my $Version   =  0;
+my $Verbose   =  0;
+my $version   =  0;
 my $word      =  0;
 my $add       =  0;
 my $h         =  0;
@@ -102,8 +102,8 @@ my %options = (
     "add"         => \$add,
     "help"        => \$help,
     "edit"        => \$edit,
-    "verbose"     => \$verbose,
-    "Version"     => \$Version,
+    "Verbose"     => \$Verbose,
+    "version"     => \$version,
     "library=s"   => \$library,
 );
 
@@ -238,7 +238,7 @@ sub search_note {
     else {
         output "No match.\n";
     }
-    if ( $verbose && $total_excluded ) {
+    if ( $Verbose && $total_excluded ) {
         my $entries = $total_excluded == 1 ? 'entry' : 'entries';
         my $were    = $total_excluded == 1 ? 'was'   : 'were';
         output "($total_excluded $entries $were excluded in other libraries- ";
@@ -275,7 +275,7 @@ sub main {
 
     if    ($help)     { return usage()                  }
     elsif ($h)        { return do_short_usage()         }
-    elsif ($Version)  { return version()                }
+    elsif ($version)  { return version()                }
     elsif ($add)      { return add_note()               }
     elsif ($edit)     { return edit_notes()             }
     elsif (@patterns) { return search_note( @patterns ) }
