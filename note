@@ -19,13 +19,53 @@ use strict;
 use warnings FATAL => 'all';
 
 use Data::Dumper;
+use File::Basename;
 use Getopt::Long;
 use IO::File;
 
+our $VERSION = '0.9.3';
+
+my $PROG = basename($0);
+
+my $USAGE_FIRST_LINE = "Usage: $PROG [OPTION]... PATTERN...";
+
+sub error {
+    my $message = join( ' ', @_ );
+    die <<EOF_error;
+$PROG: $message
+$USAGE_FIRST_LINE
+Try '$PROG --help' for more information.
+EOF_error
+}
+
+sub usage {
+    warn <<EOF;
+$USAGE_FIRST_LINE
+Add or retrieve a note
+Example: note lawnmower # retrieve any notes with the word lawnmower
+
+  -h, --help                display this help text and exit
+  -V, --version             display version information and exit
+  -1, --1                   use notefile #1
+  -2, --2                   use notefile #2
+  -a, --add                 add a note
+  -e, --edit                edit the notes file
+  -l, --library=LIBRARY     Search a specific library
+  -t, --title               search title only
+  -v, --verbose             show additional information about entries
+                            matched / not matched
+  -w, --word                only find if PATTERN is a word
+EOF
+    return;
+}
+
+sub version {
+    warn "$PROG $VERSION\n";
+    return;
+}
+
 my $nf = $ENV{NOTEFILES} || "$ENV{HOME}/info/notes.txt";
 my @notefiles = split ':', $nf;
-
-our $VERSION = '0.9.2';
 
 my $one       = '';
 my $two       = '';
@@ -33,6 +73,7 @@ my $title     = '';
 my $library   = '';
 my $edit      =  0;
 my $verbose   =  0;
+my $Version   =  0;
 my $word      =  0;
 my $add       =  0;
 my $help      =  0;
@@ -50,6 +91,7 @@ my %options = (
     "help"        => \$help,
     "edit"        => \$edit,
     "verbose"     => \$verbose,
+    "Version"     => \$Version,
     "library=s"   => \$library,
 );
 
@@ -61,30 +103,10 @@ while (($key,$value) = each %temp) {
     $options{$letter} = $value;
 }
 
-GetOptions(%options) or die("Error in command line arguments\n");
+GetOptions(%options) or error("Error in command line arguments");
 
 @notefiles = $notefiles[0] if $one;
 @notefiles = $notefiles[1] if $two;
-
-sub usage {
-    return <<EOF;
-Usage: note [OPTION]... PATTERN...
-Add or retrieve a note
-Example: note lawnmower # retrieve any notes with the word lawnmower
-
--l [library], --library=[library] Search a specific library
--1, --1         use notefile #1
--2, --2         use notefile #2
--a, --add       Add a note
--t, --title     Search title only
--w, --word      Only find if PATTERN is a word
--e, --edit      Edit the notes file
--v, --verbose   Show additional information about entries matched / not matched
-EOF
-}
-
-sub errout {
-}
 
 sub edit_notes {
     my $editor = $ENV{EDITOR} || 'vim';
@@ -214,6 +236,8 @@ sub search_note {
     open O, '| less -FX' or die;
     print O @output_lines;
     close O;
+
+    return;
 }
 
 sub add_note {
@@ -227,18 +251,22 @@ sub add_note {
 
     print $ofh "${separator}${note}\n";
     $ofh->close;
-    print STDERR "*** 1 note added to $notefiles[0]\n";
+    warn "*** 1 note added to $notefiles[0]\n";
+
+    return;
 }
 
 sub main {
     my (@patterns) = @_;
 
-    if    ($help)     { die usage()              }
-    elsif ($add)      { add_note()               }
-    elsif ($edit)     { edit_notes()             }
-    elsif (@patterns) { search_note( @patterns ) }
-    else              { die usage()              }
+    if    ($help)     { return usage()                  }
+    elsif ($Version)  { return version()                }
+    elsif ($add)      { return add_note()               }
+    elsif ($edit)     { return edit_notes()             }
+    elsif (@patterns) { return search_note( @patterns ) }
+    else              { return error("No arguments")    }
 
+    die "Boom."; # This code should never be reached
     return;
 }
 
