@@ -40,7 +40,8 @@ my $threshold = 10;
 
 my $separator = "%%%\n";
 
-GetOptions(
+Getopt::Long::Configure ("bundling");
+my %options = (
     "1"           => \$one,
     "2"           => \$two,
     "title"       => \$title,
@@ -50,7 +51,17 @@ GetOptions(
     "edit"        => \$edit,
     "verbose"     => \$verbose,
     "library=s"   => \$library,
-) or die("Error in command line arguments\n");
+);
+
+# Explicitly add single letter version of each option to allow bundling
+my ($key, $value);
+my %temp = %options;
+while (($key,$value) = each %temp) {
+    my $letter = substr $key, 0, 1;
+    $options{$letter} = $value;
+}
+
+GetOptions(%options) or die("Error in command line arguments\n");
 
 @notefiles = $notefiles[0] if $one;
 @notefiles = $notefiles[1] if $two;
