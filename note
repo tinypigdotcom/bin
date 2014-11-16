@@ -59,7 +59,7 @@ sub usage {
     return <<EOF;
 Usage: note [OPTION]... PATTERN...
 Add or retrieve a note
-Example: note lawnmower
+Example: note lawnmower # retrieve any notes with the word lawnmower
 
 -l [library], --library=[library] Search a specific library
 -1, --1         use notefile #1
