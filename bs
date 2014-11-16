@@ -4,13 +4,62 @@
 # outside a repository and I want to make sure I don't lose it.
 # bs stands for "backup script" I swear.
 
-VERSION=1.0.3
+VERSION=1.0.4
 PROG=`basename $0`
+USAGE_FIRST_LINE="Usage: $PROG FILE"
 
 errout() {
-    echo "$PROG: $1" >&2
+    cat <<EOF_errout >&2
+$PROG: $*
+$USAGE_FIRST_LINE
+Try '$PROG --help' for more information.
+EOF_errout
+
     exit 1
 }
+
+usage() {
+
+    cat <<EOF_usage >&2
+$USAGE_FIRST_LINE
+Search for a file and add it to the current "p" project.
+Example: $PROG menu.h
+
+  -h, --help                display this help text and exit
+  -V, --version             display version information and exit
+EOF_usage
+
+}
+
+version() {
+   echo "$PROG $VERSION" >&2
+}
+
+OPTS=`getopt -o Vh -l 'version,help' -- "$@"`
+if [ $? != 0 ]; then
+    usage
+    exit 1
+fi
+
+eval set -- "$OPTS"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+      -h | --help) usage
+                   exit
+                   ;;
+   -V | --version) version
+                   exit
+                   ;;
+               --) shift
+                   break
+                   ;;
+                *) errout "Invalid option: $1"
+                   ;;
+    esac
+    shift
+done
 
 FILE=$1
 if [ ! -f $FILE ]; then

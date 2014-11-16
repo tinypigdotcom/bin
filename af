@@ -1,7 +1,7 @@
 #!/bin/bash
 # purpose: Search for a file and add it to the current "p" project.
 
-VERSION=0.0.3
+VERSION=0.0.4
 PROG=`basename $0`
 USAGE_FIRST_LINE="Usage: $PROG FILENAME_PART"
 
@@ -28,6 +28,10 @@ EOF_usage
 
 }
 
+version() {
+   echo "$PROG $VERSION" >&2
+}
+
 OPTS=`getopt -o Vh -l 'version,help' -- "$@"`
 if [ $? != 0 ]; then
     usage
@@ -42,7 +46,7 @@ do
       -h | --help) usage
                    exit
                    ;;
-   -V | --version) echo "$PROG $VERSION" >&2
+   -V | --version) version
                    exit
                    ;;
                --) shift
