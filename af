@@ -1,24 +1,28 @@
 #!/bin/bash
 # purpose: Search for a file and add it to the current "p" project.
 
-VERSION=0.0.4
+VERSION=0.0.5
 PROG=`basename $0`
-USAGE_FIRST_LINE="Usage: $PROG FILENAME_PART"
+
+usage_top()   {
+    echo "Usage: $PROG FILENAME_PART" >&2
+}
+
+short_usage() {
+    usage_top
+    echo "Try '$PROG --help' for more information." >&2
+}
 
 errout() {
-    cat <<EOF_errout >&2
-$PROG: $*
-$USAGE_FIRST_LINE
-Try '$PROG --help' for more information.
-EOF_errout
-
-    exit 1
+    echo "$PROG: $*" >&2
+    short_usage
+    exit 2
 }
 
 usage() {
 
+    usage_top
     cat <<EOF_usage >&2
-$USAGE_FIRST_LINE
 Search for a file and add it to the current "p" project.
 Example: $PROG menu.h
 
@@ -28,14 +32,19 @@ EOF_usage
 
 }
 
+do_short_usage() {
+    short_usage
+    exit 2
+}
+
 version() {
    echo "$PROG $VERSION" >&2
 }
 
 OPTS=`getopt -o Vh -l 'version,help' -- "$@"`
 if [ $? != 0 ]; then
-    usage
-    exit 1
+    short_usage
+    exit 2
 fi
 
 eval set -- "$OPTS"
@@ -43,7 +52,9 @@ eval set -- "$OPTS"
 while [ $# -gt 0 ]
 do
     case "$1" in
-      -h | --help) usage
+               -h) do_short_usage
+                   ;;
+           --help) usage
                    exit
                    ;;
    -V | --version) version
@@ -59,8 +70,7 @@ do
 done
 
 if [ "$#" -lt 1 ]; then
-    errout "Must have at least one argument"
-    exit
+    do_short_usage
 fi
 
 cd /www
