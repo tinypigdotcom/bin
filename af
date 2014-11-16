@@ -1,7 +1,63 @@
+#!/bin/bash
+# purpose: Search for a file and add it to the current "p" project.
 
-# purpose: add a file to current project
+VERSION=0.0.2
+PROG=`basename $0`
+USAGE_FIRST_LINE="Usage: $PROG FILENAME_PART"
 
-VERSION=0.0.1
+errout() {
+    cat <<EOF_errout >&2
+$PROG: $*
+$USAGE_FIRST_LINE
+Try '$PROG --help' for more information.
+EOF_errout
+
+    exit 1
+}
+
+usage() {
+
+    cat <<EOF_usage >&2
+$USAGE_FIRST_LINE
+Search for a file and add it to the current "p" project.
+Example: $PROG menu.h
+
+  -h, --help                display this help text and exit
+  -v, --version             display version information and exit
+EOF_usage
+
+}
+
+OPTS=`getopt -o vh -l 'version,help' -- "$@"`
+if [ $? != 0 ]; then
+    usage
+    exit 1
+fi
+
+eval set -- "$OPTS"
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+      -h | --help) usage
+                   exit
+                   ;;
+   -v | --version) echo "$PROG $VERSION" >&2
+                   exit
+                   ;;
+               --) shift
+                   break
+                   ;;
+                *) errout "Invalid option: $1"
+                   ;;
+    esac
+    shift
+done
+
+if [ "$#" -lt 1 ]; then
+    errout "Must have at least one argument"
+    exit
+fi
 
 cd /www
 b=-1
