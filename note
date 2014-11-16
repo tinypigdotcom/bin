@@ -23,7 +23,7 @@ use File::Basename;
 use Getopt::Long;
 use IO::File;
 
-our $VERSION = '0.9.5';
+our $VERSION = '0.9.6';
 
 my $PROG = basename($0);
 my $ERR_EXIT = 2;
@@ -111,7 +111,8 @@ my %options = (
 my ($key, $value);
 my %temp = %options;
 while (($key,$value) = each %temp) {
-    my $letter = substr $key, 0, 1;
+    my $letter = $key;
+    $letter =~ s/(\w)\w*/$1/;
     $options{$letter} = $value;
 }
 # Fix for short usage
