@@ -23,24 +23,30 @@ use File::Basename;
 use Getopt::Long;
 use IO::File;
 
-our $VERSION = '0.9.3';
+our $VERSION = '0.9.4';
 
 my $PROG = basename($0);
+my $ERR_EXIT = 2;
 
-my $USAGE_FIRST_LINE = "Usage: $PROG [OPTION]... PATTERN...";
+sub usage_top {
+    warn "Usage: $PROG [OPTION]... PATTERN...\n";
+}
 
-sub error {
+sub short_usage {
+    usage_top();
+    warn "Try '$PROG --help' for more information.\n";
+}
+
+sub errout {
     my $message = join( ' ', @_ );
-    die <<EOF_error;
-$PROG: $message
-$USAGE_FIRST_LINE
-Try '$PROG --help' for more information.
-EOF_error
+    warn "$PROG: $message\n";
+    short_usage();
+    exit $ERR_EXIT;
 }
 
 sub usage {
+    usage_top();
     warn <<EOF;
-$USAGE_FIRST_LINE
 Add or retrieve a note
 Example: note lawnmower # retrieve any notes with the word lawnmower
 
@@ -57,6 +63,11 @@ Example: note lawnmower # retrieve any notes with the word lawnmower
   -w, --word                only find if PATTERN is a word
 EOF
     return;
+}
+
+sub do_short_usage {
+    short_usage();
+    exit $ERR_EXIT;
 }
 
 sub version {
@@ -76,6 +87,7 @@ my $verbose   =  0;
 my $Version   =  0;
 my $word      =  0;
 my $add       =  0;
+my $h         =  0;
 my $help      =  0;
 my $threshold = 10;
 
@@ -102,8 +114,10 @@ while (($key,$value) = each %temp) {
     my $letter = substr $key, 0, 1;
     $options{$letter} = $value;
 }
+# Fix for short usage
+$options{h} = \$h;
 
-GetOptions(%options) or error("Error in command line arguments");
+GetOptions(%options) or errout("Error in command line arguments");
 
 @notefiles = $notefiles[0] if $one;
 @notefiles = $notefiles[1] if $two;
@@ -260,11 +274,12 @@ sub main {
     my (@patterns) = @_;
 
     if    ($help)     { return usage()                  }
+    elsif ($h)        { return do_short_usage()         }
     elsif ($Version)  { return version()                }
     elsif ($add)      { return add_note()               }
     elsif ($edit)     { return edit_notes()             }
     elsif (@patterns) { return search_note( @patterns ) }
-    else              { return error("No arguments")    }
+    else              { return do_short_usage()         }
 
     die "Boom."; # This code should never be reached
     return;
