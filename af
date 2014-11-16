@@ -3,6 +3,7 @@
 
 VERSION=0.0.5
 PROG=`basename $0`
+ERR_EXIT=2
 
 usage_top()   {
     echo "Usage: $PROG FILENAME_PART" >&2
@@ -16,7 +17,7 @@ short_usage() {
 errout() {
     echo "$PROG: $*" >&2
     short_usage
-    exit 2
+    exit $ERR_EXIT
 }
 
 usage() {
@@ -34,7 +35,7 @@ EOF_usage
 
 do_short_usage() {
     short_usage
-    exit 2
+    exit $ERR_EXIT
 }
 
 version() {
@@ -44,7 +45,7 @@ version() {
 OPTS=`getopt -o Vh -l 'version,help' -- "$@"`
 if [ $? != 0 ]; then
     short_usage
-    exit 2
+    exit $ERR_EXIT
 fi
 
 eval set -- "$OPTS"
