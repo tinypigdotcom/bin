@@ -12,7 +12,7 @@ use File::Basename;
 use Getopt::Long;
 use IO::File;
 
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 my $PROG = basename($0);
 my $ERR_EXIT = 2;
@@ -76,12 +76,12 @@ my %options = (
 my ($key, $value);
 my %temp = %options;
 while (($key,$value) = each %temp) {
-    my $letter = substr $key, 0, 1;
+    my $letter = $key;
+    $letter =~ s/(\w)\w*/$1/;
     $options{$letter} = $value;
 }
 # Fix-ups from previous routine
 $options{h}     = \$h;
-$options{"b=i"} = \$backdate,
 
 GetOptions(%options) or errout("Error in command line arguments");
 
