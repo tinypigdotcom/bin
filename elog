@@ -1,31 +1,101 @@
 #!/usr/bin/perl
-
-# purpose: edit time card
+# purpose: edit work log
 
 use 5.16.0;
+use warnings FATAL => 'all';
 
 use Data::Dumper;
 use DateTime;
 use DateTime::Duration;
 use DateTime::Format::Duration;
+use File::Basename;
+use Getopt::Long;
 use IO::File;
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
-my $mdy;
+my $PROG = basename($0);
+my $ERR_EXIT = 2;
 
-my $backday = 0;
+sub usage_top {
+    warn "Usage: $PROG [OPTION]...\n";
+}
 
-if ( $ARGV[0] =~ /^-(.*)/ ) {
-    $backday = $1;
-    if ( $backday eq 'y' ) {
-        $backday = 1;
-    }
+sub short_usage {
+    usage_top();
+    warn "Try '$PROG --help' for more information.\n";
+}
+
+sub errout {
+    my $message = join( ' ', @_ );
+    warn "$PROG: $message\n";
+    short_usage();
+    exit $ERR_EXIT;
+}
+
+sub usage {
+    usage_top();
+    warn <<EOF;
+Edit work log
+Example: elog --backdate=3
+
+  -h, --help                display this help text and exit
+  -v, --version             display version information and exit
+  -y, --yesterday           edit yesterday's data instead of today's
+  -b, --backdate=#DAYS      edit # days ago instead of today
+EOF
+    return;
+}
+
+sub do_short_usage {
+    short_usage();
+    exit $ERR_EXIT;
+}
+
+sub version {
+    warn "$PROG $VERSION\n";
+    return;
+}
+
+my $backdate  =  0;
+my $h         =  0;
+my $help      =  0;
+my $version   =  0;
+my $yesterday =  0;
+
+Getopt::Long::Configure ("bundling");
+
+my %options = (
+    "backdate=i"  => \$backdate,
+    "help"        => \$help,
+    "version"     => \$version,
+    "yesterday"   => \$yesterday,
+);
+
+# Explicitly add single letter version of each option to allow bundling
+my ($key, $value);
+my %temp = %options;
+while (($key,$value) = each %temp) {
+    my $letter = substr $key, 0, 1;
+    $options{$letter} = $value;
+}
+# Fix-ups from previous routine
+$options{h}     = \$h;
+$options{"b=i"} = \$backdate,
+
+GetOptions(%options) or errout("Error in command line arguments");
+
+if    ($help)     { usage(); exit    }
+elsif ($h)        { do_short_usage() }
+elsif ($version)  { version(); exit  }
+
+if ( $yesterday ) {
+    $backdate = 1;
 }
 
 my $today = DateTime->now( time_zone => 'local' )->set_time_zone('floating')
-  ->subtract( days => $backday );
-if ($backday) {
+  ->subtract( days => $backdate );
+if ($backdate) {
     $today->set_hour(18);
     $today->set_minute(0);
     $today->set_second(0);
@@ -125,7 +195,7 @@ for my $file (@files) {
         and $current_day == $item_day
         and $current_year == $item_year )
     {
-        output("$mdy$item_hour:$item_minute:$item_second...$work_item\n");
+        output("$item_hour:$item_minute:$item_second...$work_item\n");
         push @remove, $full_path;
     }
 }
