@@ -22,7 +22,7 @@ usage() {
 
     cat <<EOF_usage >&2
 $USAGE_FIRST_LINE
-Search for a file and add it to the current "p" project.
+quickly back up a script version into ~/archive via git
 Example: $PROG menu.h
 
   -h, --help                display this help text and exit
