@@ -17,6 +17,9 @@
 #    davembradford@gmail.com
 #
 #    purpose: shorcut script for easy change directory
+#    !!!!!!!!!
+#    ! NOTE: ! DON'T "exit" ONLY "return"-this is sourced in the current shell
+#    !!!!!!!!!
 
 #    Usage:
 #    $ . c b
