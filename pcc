@@ -1,0 +1,66 @@
+#!/usr/bin/perl
+
+use 5.16.0;
+
+use Carp;
+use Data::Dumper;
+use IO::File;
+use Text::Template;
+
+my $infile = shift @ARGV || 'dmb.ps';
+my $outfile = $infile;
+if ( $outfile =~ s/\.s\.pl$/\.pl/ ) {
+}
+else {
+    $outfile .= '.pl';
+}
+
+my $VAR1;
+sub dump_read {
+    my $ifh = IO::File->new($infile, '<');
+    croak if (!defined $ifh);
+
+    my $contents;
+    while (<$ifh>) {
+        chomp;
+        next if /^#!.*perl/;
+        s/^#\s*<-\s*//;
+        if ( !/\s*#->$/ ) {
+            $contents .= "$_\n";
+        }
+    }
+    $ifh->close;
+
+    my $data = eval $contents; ## no critic
+    if ( !defined $data ) {
+        croak "failed eval of dump";
+    }
+    return;
+}
+
+my $open_delimiter  = '[<';
+my $close_delimiter = '>]';
+my $template = Text::Template->new(
+    SOURCE     => 'perl.t',
+    DELIMITERS => [ $open_delimiter, $close_delimiter ],
+) or die "Couldn't construct template: $Text::Template::ERROR";
+
+dump_read();
+my %vars = %$VAR1;
+
+my $result = $template->fill_in(HASH => \%vars);
+
+if (! defined $result) {
+    die "Couldn't fill in template: $Text::Template::ERROR";
+}
+
+if ( $vars{target} ) {
+    $outfile = $vars{target};
+}
+
+my $ofh = IO::File->new($outfile, '>');
+die if (!defined $ofh);
+
+print $ofh "$result\n";
+$ofh->close;
+
