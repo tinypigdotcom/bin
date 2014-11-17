@@ -64,3 +64,5 @@ die if (!defined $ofh);
 print $ofh "$result\n";
 $ofh->close;
 
+my $mode = 0700; chmod $mode, $outfile;
+
