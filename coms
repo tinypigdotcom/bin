@@ -9,7 +9,7 @@
 
 use Modern::Perl '2014';use warnings;our$TEMPLATE_VERSION='v0.1.7';package ComsScript{use Carp;use Data::Dumper;use Hash::Util qw(lock_keys);our$VAR1;my$persist_file="$ENV{HOME}/.coms_script";my$do_persist=0;my$DEBUG=0;
 
-our $VERSION='v0.1.2';
+our $VERSION='v0.1.3';
 my @keys = qw( argv switches pattern coms_switch2 input_file );
 
 sub run {
@@ -19,7 +19,6 @@ sub run {
     $self->check_inputs();
 
     $self->main_coms_run();
-    $self->freeze_me();
     return 0;    # return for entire script
 }
 
@@ -128,7 +127,6 @@ sub check_inputs {
 
         my $self = {};
         bless $self, $class;
-        thaw_me( \$self );
         lock_keys( %$self, @keys );
 
         return $self;
@@ -149,69 +147,6 @@ sub check_inputs {
             $message .= usage();
         }
         die $message;
-    }
-
-    sub thaw_me {
-        return unless $do_persist;
-
-        my ($self) = @_;
-
-        return unless thaw($persist_file);
-
-        ${$self} = $VAR1;
-
-        if ($DEBUG) {
-            warn "thawed!\n", Dumper($self);
-        }
-        if ( !defined $self ) {
-            croak "failed eval of dump";
-        }
-    }
-
-    sub freeze_me {
-        return unless $do_persist;
-
-        my ($self) = @_;
-        $self->freeze( $persist_file, $self );
-    }
-
-    sub thaw {
-        croak "This is a function, not a method" if ( ref $_[0] );
-
-        my ($filename) = @_;
-
-        my $ifh = IO::File->new( $filename, '<' );
-        return if ( !defined $ifh );
-
-        my $contents = do { local $/; <$ifh> };
-        $ifh->close;
-
-        return eval $contents;
-    }
-
-    sub freeze {
-        croak "This is a function, not a method" if ( ref $_[0] );
-
-        my ( $filename, $ref ) = @_;
-
-        my $ofh = IO::File->new( $filename, '>' );
-        croak "Failed to open output file: $!" if ( !defined $ofh );
-
-        print $ofh Dumper($ref);
-        $ofh->close;
-    }
-
-    sub random {
-        croak "This is a function, not a method" if ( ref $_[0] );
-
-        my ( $max, $min ) = @_;
-
-        $min //= 1;
-        if ( $min > $max ) {
-            ( $min, $max ) = ( $max, $min );
-        }
-        my $range = $max - $min;
-        return int( rand( $range + 1 ) ) + $min;
     }
 
     # example
