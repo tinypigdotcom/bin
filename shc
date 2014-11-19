@@ -1,0 +1,73 @@
+#!/usr/bin/perl
+# purpose: build sh programs from template
+# TODO
+# be able to handle switches with params (:) and optional params (::)
+
+use 5.16.0;
+
+use Carp;
+use Data::Dumper;
+use IO::File;
+use Text::Template;
+
+our $VERSION = '0.0.3';
+
+my $infile = shift @ARGV || 'dmb.ps';
+my $outfile = $infile;
+if ( $outfile =~ s/\.s\.sh$/\.sh/ ) {
+}
+else {
+    $outfile .= '.sh';
+}
+
+my $VAR1;
+sub dump_read {
+    my $ifh = IO::File->new($infile, '<');
+    croak if (!defined $ifh);
+
+    my $contents;
+    while (<$ifh>) {
+        chomp;
+        next if /^#!.*sh/;
+        s/^#\s*<-\s*//;
+        if ( !/\s*#->$/ ) {
+            $contents .= "$_\n";
+        }
+    }
+    $ifh->close;
+
+    my $data = eval $contents; ## no critic
+    if ( !defined $data ) {
+        croak "failed eval of dump";
+    }
+    return;
+}
+
+my $open_delimiter  = '[<';
+my $close_delimiter = '>]';
+my $template = Text::Template->new(
+    SOURCE     => 'sh.t',
+    DELIMITERS => [ $open_delimiter, $close_delimiter ],
+) or die "Couldn't construct template: $Text::Template::ERROR";
+
+dump_read();
+my %vars = %$VAR1;
+
+my $result = $template->fill_in(HASH => \%vars);
+
+if (! defined $result) {
+    die "Couldn't fill in template: $Text::Template::ERROR";
+}
+
+if ( $vars{target} ) {
+    $outfile = $vars{target};
+}
+
+my $ofh = IO::File->new($outfile, '>');
+die if (!defined $ofh);
+
+print $ofh "$result";
+$ofh->close;
+
+my $mode = 0700; chmod $mode, $outfile;
+
