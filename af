@@ -27,8 +27,8 @@ usage() {
 Search for a file and add it to the current "p" project.
 Example: $PROG menu.h
 
-  -h, --help                display this help text and exit
-  -v, --version             display version information and exit
+  -h, --help     display this help text and exit
+  -v, --version  display version information and exit
 EOF_usage
 
 }
