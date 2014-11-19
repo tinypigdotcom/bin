@@ -42,7 +42,7 @@ version() {
    echo "$PROG $VERSION" >&2
 }
 
-OPTS=`getopt -o vh -l 'version,help' -- "$@"`
+OPTS=`getopt -o hv -l 'help,version' -- "$@"`
 if [ $? != 0 ]; then
     short_usage
     exit $ERR_EXIT
