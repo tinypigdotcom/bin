@@ -49,7 +49,7 @@ A='
     ca     git commit -a -m "$*"       # Commit All With Message
     cm     git commit -m "$*"          # Commit With Message
     v      git checkout develop $*     # Develop Checkout
-    d      git diff                    # Diff
+    d      git diff $*                 # Diff
     m      git checkout master $*      # Master Checkout
     pd     git push origin develop $*  # Push Develop
     pm     git push origin master $*   # Push Master
