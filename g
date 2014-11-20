@@ -39,7 +39,7 @@
 #
 
 # -------------------------- Data: map option letter to its associated command
-VERSION=1.1.2
+VERSION=1.1.3
 A='
 
 
