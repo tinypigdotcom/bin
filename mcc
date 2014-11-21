@@ -210,7 +210,7 @@ my $result = $template->fill_in(
      BROKEN_ARG => \$error,
      PREPEND    => q{
          use strict;
-         use vars qw( $PROG $purpose $LICENSE $VERSION $params $example
+         use vars qw( $exit $PROG $purpose $LICENSE $VERSION $params $example
          $CODE $long_opts $out $single_keys $switch_max_len $top_comments_block
          @long_opts @options );
      },
