@@ -2,7 +2,6 @@
 # Built from perl.t template
 # purpose: build programs from template
 
-
 #    Copyright (C) 2014  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -28,7 +27,7 @@ use warnings FATAL => 'all';
 use File::Basename;
 use Getopt::Long;
 
-our $VERSION = '0.0.2';
+our $VERSION = '0.0.3';
 
 my $PROG = basename($0);
 my $ERR_EXIT = 2;
@@ -184,8 +183,14 @@ my $year = sprintf("%04s",(localtime(time))[5] + 1900);
 my %license_vars = ( year => $year );
 
 my $license_result = $license_template->fill_in(
+    BROKEN     => \&my_broken,
+    BROKEN_ARG => \$error,
     HASH    => \%license_vars,
 );
+
+if ($error) {
+    die "$error\n";
+}
 
 if (! defined $license_result) {
     die "Couldn't fill in license template: $Text::Template::ERROR";
@@ -201,16 +206,17 @@ my %vars = %$VAR1;
 $vars{LICENSE}=$license_result;
 
 my $result = $template->fill_in(
-    BROKEN     => \&my_broken,
-    BROKEN_ARG => \$error,
-    PREPEND    => q{
-        use strict;
-        use vars qw( $PROG $purpose $LICENSE $VERSION $params $example
-        $CODE $long_opts $out $single_keys $switch_max_len $top_comments_block
-        @long_opts @options );
-    },
+     BROKEN     => \&my_broken,
+     BROKEN_ARG => \$error,
+     PREPEND    => q{
+         use strict;
+         use vars qw( $PROG $purpose $LICENSE $VERSION $params $example
+         $CODE $long_opts $out $single_keys $switch_max_len $top_comments_block
+         @long_opts @options );
+     },
     HASH => \%vars,
 );
+
 if ($error) {
     die "$error\n";
 }
@@ -230,5 +236,6 @@ print $ofh "$result";
 $ofh->close;
 
 my $mode = 0700; chmod $mode, $outfile;
+
 
 
