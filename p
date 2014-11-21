@@ -144,7 +144,7 @@ use Storable;
 my $separator = "%%%\n";
 my $g;
 
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 our $VAR1;
 
 my $max_prev_projects = 50;
@@ -343,10 +343,9 @@ sub pcopy {
         delete $projects->{$from};
     }
     set_current_project($to);
-    $g->{prog} = 'f';
-    @{ $g->{args} } = ();
     init();
     pfreeze();
+    list_files();
     return;
 }
 
@@ -385,7 +384,8 @@ sub search {
     my $arg = $g->{args}->[0];
     $arg //= '';
     my $projects = $g->{data}->{projects};
-    print "Projects:\n";
+    my $output = "Projects:\n";
+    my @found;
     OUTER:
     for ( sort keys %{ $projects } ) {
         my $asterisk = ( $_ eq $g->{current} ) ? '*' : ' ';
@@ -397,7 +397,17 @@ sub search {
                 next OUTER;
             }
         }
-        printf "$asterisk %-10s %-15s\n", $_, $label;
+        $output .= sprintf "$asterisk %-10s %-15s\n", $_, $label;
+        push @found, $_;
+    }
+    if ( @found == 1 ) {
+        set_current_project($found[0]);
+        init();
+        pfreeze();
+        list_files();
+    }
+    else {
+        print $output;
     }
 }
 
@@ -426,9 +436,34 @@ sub func_p {
         $projects->{$arg}->{label} = $g->{args}->[1]
           if ( $g->{args}->[1] );
         init();
-        $g->{prog} = 'f';
-        @{ $g->{args} } = ();
         pfreeze();
+        list_files();
+    }
+    return;
+}
+
+sub list_files {
+    my @args = @_;
+    if ( @args ) {
+        print STDERR "Bad arguments.\n";
+    }
+    my $label = $g->{data}->{projects}->{ $g->{current} }->{label};
+    $label //= '';
+    print "Project: $g->{current} ($label)\n";
+    print "Current files:\n";
+
+    my %sorted;
+    for ( keys %{ $g->{files} } ) {
+        my ( $a, $b ) = ( $g->{files}->{$_} =~ m!(.*)/(.*)! );
+        my $i = lc($b) . lc($a);
+        ( $sorted{$i}->{path} ) = ( $a =~ /(.{1,70})/ );
+        ( $sorted{$i}->{file} ) = ( $b =~ /(.{1,50})/ );
+        $sorted{$i}->{let} = $_;
+    }
+
+    for ( sort keys %sorted ) {
+        printf "%-1s %-50s %-70s\n", $sorted{$_}->{let},
+            $sorted{$_}->{file}, $sorted{$_}->{path};
     }
     return;
 }
@@ -510,24 +545,7 @@ sub func_f {
         if ( $na != 0 ) {
             print STDERR "Bad arguments.\n";
         }
-        my $label = $g->{data}->{projects}->{ $g->{current} }->{label};
-        $label //= '';
-        print "Project: $g->{current} ($label)\n";
-        print "Current files:\n";
-
-        my %sorted;
-        for ( keys %{ $g->{files} } ) {
-            my ( $a, $b ) = ( $g->{files}->{$_} =~ m!(.*)/(.*)! );
-            my $i = lc($b) . lc($a);
-            ( $sorted{$i}->{path} ) = ( $a =~ /(.{1,70})/ );
-            ( $sorted{$i}->{file} ) = ( $b =~ /(.{1,50})/ );
-            $sorted{$i}->{let} = $_;
-        }
-
-        for ( sort keys %sorted ) {
-            printf "%-1s %-50s %-70s\n", $sorted{$_}->{let},
-              $sorted{$_}->{file}, $sorted{$_}->{path};
-        }
+        list_files();
     }
     return;
 }
