@@ -27,7 +27,7 @@ use warnings FATAL => 'all';
 use File::Basename;
 use Getopt::Long;
 
-our $VERSION = '0.0.3';
+our $VERSION = '0.0.4';
 
 my $PROG = basename($0);
 my $ERR_EXIT = 2;
@@ -183,9 +183,13 @@ my $year = sprintf("%04s",(localtime(time))[5] + 1900);
 my %license_vars = ( year => $year );
 
 my $license_result = $license_template->fill_in(
+    PREPEND    => q{
+        use strict;
+        use vars qw( $year );
+    },
     BROKEN     => \&my_broken,
     BROKEN_ARG => \$error,
-    HASH    => \%license_vars,
+    HASH       => \%license_vars,
 );
 
 if ($error) {
@@ -236,6 +240,4 @@ print $ofh "$result";
 $ofh->close;
 
 my $mode = 0700; chmod $mode, $outfile;
-
-
 
