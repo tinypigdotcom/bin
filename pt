@@ -1,3 +1,0 @@
-#    purpose: run PC test suite
-VERSION=0.0.1
-cd $HOME/tests;./tt
