@@ -1,9 +1,0 @@
-# purpose: update a heartbeat file in Dropbox
-VERSION=0.0.1
-set -x
-h=$(/bin/hostname)
-DROPFILE=$HOME/info/${h}_heartbeat
-d=$(/usr/bin/date)
-d=heartbeat
-echo $d >$DROPFILE
-

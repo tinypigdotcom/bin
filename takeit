@@ -1,5 +1,0 @@
-# purpose: to update local .vimrc and .bash_profile
-VERSION=0.0.1
-set -x
-cp ~/.vimrc ~/.vim/_vimrc
-cp ~/.bash_profile ~/bin/_bash_profile

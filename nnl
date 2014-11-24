@@ -1,7 +1,0 @@
-# purpose: note to self - show all
-
-VERSION=0.0.1
-
-OUTFILE=$HOME/.nnotes
-less $OUTFILE
-
