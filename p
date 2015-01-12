@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 #------------------------------------------------------------------------------
-#    "p" - Dave's Project / File Manager (also see: f, fa, x, xa, z, zdir)
+#    clpm: Command Line Project Manager (see: p, f, fa, x, xa, z, zdir)
 #    Copyright (C) 2014 David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -38,9 +38,9 @@
 #     switch to project:     $ p myproj
 #     remove project:        $ p -myproj
 
-# purpose: Dave's Project / File Manager (also see: f, fa, x, xa, z, zdir)
+# purpose: clpm: Command Line Project Manager (see: p, f, fa, x, xa, z, zdir)
 
-# Dave's Project / File Manager
+# Command Line Project Manager (clpm)
 
 =head1 SYNOPSIS
 
@@ -84,7 +84,7 @@ Note: if the set of files changes you will need to run C<v> again.
 
 =head1 DESCRIPTION
 
-Dave's Project / File Manager is designed to make managing sets of files easier. Files can be grouped into projects and then each file can be edited with a simple command: f [space][letter representing file] [ENTER]
+Command Line Project Manager (clpm) is designed to make managing sets of files easier. Files can be grouped into projects and then each file can be edited with a simple command: f [space][letter representing file] [ENTER]
 
 =head1 INSTALLATION
 
@@ -144,7 +144,7 @@ use Storable;
 my $separator = "%%%\n";
 my $g;
 
-our $VERSION = '0.7';
+our $VERSION = '1.0';
 our $VAR1;
 
 my $max_prev_projects = 50;
@@ -700,7 +700,7 @@ sub func_x {
 
 sub func_z {
     print fix(4,<<"    EOF"), "\n";
-    Dave's Development System v$VERSION
+    Command Line Program Managers (clpm) v$VERSION
     Help commands:
                 z  - this listing
     Organization commands:

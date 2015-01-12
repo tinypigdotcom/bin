@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# purpose: update "p" from clpm
+PERL=perl
+
+u_do_init() {
+    u_VERSION=1.0.1
+    u_PROG=`basename $0`
+    u_EXIT=
+    u_ERR_EXIT=2
+}
+
+u_do_cleanup() {
+    unset u_VERSION
+    unset u_PROG
+    unset u_EXIT
+    unset u_ERR_EXIT
+    unset u_EXIT_STATUS
+    unset u_OPTS
+
+
+    unset -f u_do_cleanup
+    unset -f u_do_exit
+    unset -f u_do_init
+    unset -f u_do_short_usage
+    unset -f u_errout
+    unset -f u_short_usage
+    unset -f u_usage
+    unset -f u_usage_top
+    unset -f u_version
+}
+
+u_do_exit() {
+    u_do_cleanup
+    u_EXIT=1
+    exit $u_EXIT_STATUS
+}
+
+u_usage_top()   {
+    echo "Usage: $u_PROG" >&2
+}
+
+u_short_usage() {
+    u_usage_top
+    echo "Try '$u_PROG --help' for more information." >&2
+}
+
+u_errout() {
+    echo "$u_PROG: $*" >&2
+    u_short_usage
+    u_EXIT_STATUS=$u_ERR_EXIT
+    u_do_exit
+}
+
+u_do_init
+
+u_usage() {
+
+    u_usage_top
+    cat <<EOF_usage >&2
+update "p" from clpm directory
+Example: $u_PROG
+
+  -h, --help    display this help text and exit
+  -v, --version display version information and exit
+
+EOF_usage
+
+}
+
+u_do_short_usage() {
+    u_short_usage
+    u_EXIT_STATUS=$u_ERR_EXIT
+    u_do_exit
+}
+
+u_version() {
+   echo "$u_PROG $u_VERSION" >&2
+}
+
+parsed_ops=$(
+  $PERL -MGetopt::Long -le '
+    Getopt::Long::Configure ("bundling");
+
+    my @options = (
+        "help",
+        "version",
+
+    );
+
+    # Explicitly add single letter version of each option to allow bundling
+    my @temp = @options;
+    for my $letter (@temp) {
+        $letter =~ s/(\w)\w*/$1/;
+        next if $letter eq q{h};
+        push @options, $letter;
+    }
+    # Fix-ups from previous routine
+    push @options, q{h};
+
+    Getopt::Long::Configure "bundling";
+    $q = "'\''";
+    GetOptions(@options) or exit 1;
+    for ( map /(\w+)/, @options ) {
+        eval "\$o=\$opt_$_";
+        $o =~ s/$q/$q\\$q$q/g;
+        print "u_opt_$_=$q$o$q";
+    }' -- "$@"
+) || u_do_exit
+eval "$parsed_ops"
+
+if [ -n "$u_opt_h" ]; then
+    u_do_short_usage
+fi
+
+if [ -n "$u_opt_help" ]; then
+    u_usage
+    u_do_exit
+fi
+
+if [ -n "$u_opt_v$u_opt_version" ]; then
+    u_version
+    u_do_exit
+fi
+
+if [ -n "$u_EXIT" ]; then
+    exit $u_EXIT_STATUS
+fi
+
+if [ "$#" -gt 0 ]; then
+    u_do_short_usage
+fi
+
+BIN=$HOME/bin
+CLPM=$HOME/clpm
+
+cd $BIN &&
+cp $CLPM/p . &&
+echo copied p &&
+ln -f p f &&
+echo linked f &&
+ln -f p fa &&
+echo linked fa &&
+ln -f p x &&
+echo linked x &&
+ln -f p xa &&
+echo linked xa &&
+ln -f p z &&
+echo linked z &&
+ln -f p zdir &&
+echo linked zdir &&
+cp $CLPM/af . &&
+echo copied af &&
+cp $CLPM/v . &&
+echo copied v &&
+cp $CLPM/d . &&
+echo copied d &&
+chmod 700 p f fa x xa z zdir af v d &&
+echo chmod 700
+
