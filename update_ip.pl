@@ -31,7 +31,8 @@ sub get_hostname {
 
 sub get_recorded_ip {
     print "get_recorded_ip()\n" if $DEBUG;
-    my $infile = "$ENV{HOME}/.ipaddress";
+    my $hostname = get_hostname();
+    my $infile="$ENV{HOME}/info/${hostname}_ip";
     my $ip_address;
     my $ifh = IO::File->new( $infile, '<' );
     if ( defined $ifh ) {
@@ -41,6 +42,7 @@ sub get_recorded_ip {
         }
         $ifh->close;
     }
+    $ip_address =~ s/.* //;
     return $ip_address;
 }
 
@@ -65,15 +67,10 @@ sub get_current_ip {
 sub write_ip_address {
     print "write_ip_address()\n" if $DEBUG;
     my $ip_address = shift;
-    my $outfile = "$ENV{HOME}/.ipaddress";
-    my $ofh = IO::File->new( $outfile, '>' );
-    die if ( !defined $ofh );
-    print $ofh "$ip_address\n";
-    $ofh->close;
     my $hostname = get_hostname();
     my $timestamp = timestamp();
-    $outfile="$ENV{HOME}/info/${hostname}_ip";
-    $ofh = IO::File->new( $outfile, '>>' );
+    my $outfile="$ENV{HOME}/info/${hostname}_ip";
+    my $ofh = IO::File->new( $outfile, '>>' );
     die if ( !defined $ofh );
     print $ofh "$timestamp $ip_address\n";
     $ofh->close;
