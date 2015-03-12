@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings FATAL => 'all';
+
+use Data::Dumper;
+
+sub function1 {
+    my @param = @_;
+    my $orig = $_;
+    my $new = $orig;
+    $new =~ s/\s+/_/g;
+    return if $orig eq $new;
+    print "Processing $orig -> $new\n";
+    die "$new exists" if -f $new;
+    rename $orig, $new;
+}
+
+sub main {
+    my @argv = @_;
+    for(@argv) {
+        function1($_);
+    }
+    return;
+}
+
+my $rc = ( main(@ARGV) || 0 );
+
+exit $rc;
+
+
