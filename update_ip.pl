@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# purpose: log latest IP
+# VERSION=0.0.1
 
 use strict;
 use warnings FATAL => 'all';

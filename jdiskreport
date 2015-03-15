@@ -1,3 +1,5 @@
 #!/bin/bash
+# purpose: run jdiskreport
+# VERSION=0.0.1
 
 java -jar $HOME/JDiskReport/jdiskreport-1.4.1.jar

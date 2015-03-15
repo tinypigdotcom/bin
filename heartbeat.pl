@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# purpose: indicate ability to communicate
+# VERSION: 0.0.1
 
 use strict;
 use warnings FATAL => 'all';
