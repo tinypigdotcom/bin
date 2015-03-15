@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -jar $HOME/JDiskReport/jdiskreport-1.4.1.jar
