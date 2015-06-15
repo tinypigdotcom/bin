@@ -22,7 +22,9 @@ hashdiff
 heartbeat
 ip_checker
 j
+j2p
 jlog
+json2perl
 lf
 m
 mcc
@@ -33,6 +35,8 @@ nn
 nnl
 note
 p
+p2j
+perl2json
 pf
 ptype
 rc
