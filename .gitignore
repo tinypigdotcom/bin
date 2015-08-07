@@ -24,6 +24,7 @@ ip_checker
 j
 j2p
 jlog
+json
 json2perl
 lf
 m
@@ -36,6 +37,7 @@ nnl
 note
 p
 p2j
+percent_encode
 perl2json
 pf
 ptype
@@ -44,8 +46,8 @@ renumber
 t
 takeit
 tl
-tt
 ts
+tt
 u
 update_gits
 v
@@ -57,4 +59,3 @@ xa
 xn
 z
 zdir
-percent_encode
