@@ -1,10 +1,13 @@
 #!/usr/bin/perl
+# purpose: a command-line presentation tool
 
 use strict;
 use warnings FATAL => 'all';
 
 use Data::Dumper;
 use DMB::Tools ':all';
+
+our $VERSION = '0.0.1';
 
 sub function1 {
     my ($lines) = @_;

@@ -1,2 +1,4 @@
+# purpose: a command-line presentation tool
+VERSION=0.1.0
 ll=`tput lines`
 slides.pl $ll
