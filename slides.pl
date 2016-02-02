@@ -12,6 +12,7 @@ use Term::ReadLine;
 our $VERSION = '0.0.1';
 
 my $term;
+my $file;
 my %subs = (
     'h' => { does => 'Get Help',
             code => \&cmd_help },
@@ -20,12 +21,11 @@ my %subs = (
     's' => {
         does => 'Get Slide',
         code => sub {
-            my $file = "$ENV{HOME}/monstercards/dnd.note";
             my $dmb_note = DMB::Notes->new(
                 file      => $file,
                 title     => 1,
             );
-            my @output_files = $dmb_note->search_note('claw');
+            my @output_files = $dmb_note->search_note('page:01');
             print @output_files;
         } },
 );
@@ -37,17 +37,24 @@ sub cmd_help {
 }
 
 sub add_history {
-    warn "$_[0]";
     $term->addhistory($_[0]);
 }
 
 sub function1 {
-    my ($lines) = @_;
+    my $lines = shift;
+    $file = shift;
+    if ( !$file ) {
+        die "Please provide a filename\n";
+    }
+    elsif ( ! -f $file ) {
+        die "File '$file' was not found\n";
+    }
     print "# of lines: $lines\n";
-    $term = $term = Term::ReadLine->new('slides');
+    $term = Term::ReadLine->new('slides');
     $term->MinLine(undef); # disable autohistory
     my $prompt = "slides> ";
     while ( defined( my $line = $term->readline($prompt) ) ) {
+        $line ||= 's';
         chomp $line;
         $line =~ m{(\S+)\s?};
         my $first_word = $1 || '';
@@ -69,7 +76,4 @@ sub main {
 my $rc = ( main(@ARGV) || 0 );
 
 exit $rc;
-
-
-
 
