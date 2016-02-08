@@ -13,20 +13,58 @@ our $VERSION = '0.0.1';
 
 my $term;
 my $file;
+my $slide_num = 0;
+my $screen_lines = 0;
+my $dmb_note;
+
+sub count_lines {
+    my @lines = @_;
+    my $total_lines = 0;
+    for my $line (@lines) {
+        while ($line =~ /\n/g) { $total_lines++ }
+    }
+    return $total_lines;
+}
+
+sub print_page {
+    my @to_print = @_;
+    my $num_lines = count_lines(@to_print);
+    my $remainder = $screen_lines - $num_lines;
+    print @to_print;
+    print "\n" x $remainder;
+    return;
+}
+
+sub show_current_slide {
+    my $slide = sprintf("slide:%03d", $slide_num);
+    my @output_lines = $dmb_note->search_note($slide);
+    $output_lines[0] =~ s{$slide}{};
+    print_page(@output_lines);
+    return;
+}
+
 my %subs = (
     'h' => { does => 'Get Help',
             code => \&cmd_help },
     'q' => { does => 'Quit',
             code => sub { exit } },
-    's' => {
-        does => 'Get Slide',
+    'd' => {
+        does => 'Show Next Slide',
         code => sub {
-            my $dmb_note = DMB::Notes->new(
-                file      => $file,
-                title     => 1,
-            );
-            my @output_files = $dmb_note->search_note('page:01');
-            print @output_files;
+            die Dumper($dmb_note);
+        } },
+    's' => {
+        does => 'Show Next Slide',
+        code => sub {
+            $slide_num++;
+            show_current_slide();
+        } },
+    'p' => {
+        does => 'Show Previous Slide',
+        code => sub {
+            $slide_num--;
+            $slide_num = 1 if $slide_num < 1;
+            show_current_slide();
         } },
 );
 
@@ -40,8 +78,8 @@ sub add_history {
     $term->addhistory($_[0]);
 }
 
-sub function1 {
-    my $lines = shift;
+sub main {
+    $screen_lines = shift;
     $file = shift;
     if ( !$file ) {
         die "Please provide a filename\n";
@@ -49,7 +87,11 @@ sub function1 {
     elsif ( ! -f $file ) {
         die "File '$file' was not found\n";
     }
-    print "# of lines: $lines\n";
+    $dmb_note = DMB::Notes->new(
+        file      => $file,
+        title     => 1,
+    );
+    print "# of lines: $screen_lines\n";
     $term = Term::ReadLine->new('slides');
     $term->MinLine(undef); # disable autohistory
     my $prompt = "slides> ";
@@ -64,12 +106,6 @@ sub function1 {
         }
         add_history($line) if $line =~ /\S/;
     }
-    return;
-}
-
-sub main {
-    my @argv = @_;
-    function1(@argv);
     return;
 }
 
