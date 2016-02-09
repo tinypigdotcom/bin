@@ -31,7 +31,9 @@ sub print_page {
     my $num_lines = count_lines(@to_print);
     my $remainder = $screen_lines - $num_lines;
     print @to_print;
-    print "\n" x $remainder;
+    if ( $remainder > 0 ) {
+        print "\n" x $remainder;
+    }
     return;
 }
 
