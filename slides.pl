@@ -93,6 +93,7 @@ sub main {
         file      => $file,
         title     => 1,
     );
+    $screen_lines--;
     print "# of lines: $screen_lines\n";
     $term = Term::ReadLine->new('slides');
     $term->MinLine(undef); # disable autohistory
