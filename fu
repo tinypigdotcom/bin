@@ -46,7 +46,7 @@ import argparse
 import dmb_random
 import os
 
-VERSION = '0.0.1'
+VERSION = '0.1.1'
 
 PROG = os.path.basename(__file__)
 ERR_EXIT = 2
