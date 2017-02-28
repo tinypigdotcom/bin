@@ -55,7 +55,7 @@ def version():
     warn(PROG,VERSION)
 
 # Get an argument parser and add main purpose of program
-parser = argparse.ArgumentParser(description='Remove spaces from filesnames.')
+parser = argparse.ArgumentParser(description='Remove spaces from filenames.')
 parser.add_argument(
     'files',
     metavar='file',
