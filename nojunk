@@ -73,6 +73,7 @@ if args.version:
 
 for i in args.files:
     new = re.sub('\s', '_', i)
+    new = re.sub('[()]', '_', new)
     if i == new:
         continue
     if os.path.isfile(new):
