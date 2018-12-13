@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+# purpose: remove spaces from filenames
+
+#    Copyright (C) 2016,2017  David M. Bradford
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your u_option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see https://www.gnu.org/licenses/gpl.txt
+#
+#    The author, David M. Bradford, can be contacted at:
+#    davembradford@gmail.com
+
+
+# START python way of use strict; use warnings;
+# END python way of use strict; use warnings;
+
+# START python way of doing $| = 1
+
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+import sys
+sys.stdout = Unbuffered(sys.stdout)
+
+# END python way of doing $| = 1
+
+def warn(*messages):
+    sys.stderr.write(" ".join(messages) + '\n')
+
+import argparse
+import os
+import re
+
+VERSION = '0.1.1'
+
+PROG = os.path.basename(__file__)
+ERR_EXIT = 2
+
+def version():
+    warn(PROG,VERSION)
+
+# Get an argument parser and add main purpose of program
+parser = argparse.ArgumentParser(description='Remove spaces from filenames.')
+parser.add_argument(
+    'files',
+    metavar='file',
+    nargs='+',
+    help='filename from which to remove spaces',
+)
+
+parser.add_argument("-v", "--version", action="store_true")
+
+args = parser.parse_args()
+
+if args.version:
+    version()
+    sys.exit()
+
+for i in args.files:
+    new = re.sub('\s', '_', i)
+    new = re.sub('[()]', '_', new)
+    if i == new:
+        continue
+    if os.path.isfile(new):
+        warn("skipping existing file",new)
+        continue
+    os.rename(i, new)
+    print("{} -> {}".format(i,new))
+
