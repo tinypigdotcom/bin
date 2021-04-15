@@ -1,8 +1,7 @@
 #!/usr/bin/env perl
-# Built from perl.t template
-# purpose: get current Unix version
+# purpose: TEMPLATE do blah whatever thing
 
-#    Copyright (C) 2020  David M. Bradford
+#    Copyright (C) 2020,2021  David M. Bradford
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
