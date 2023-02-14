@@ -1,0 +1,2 @@
+set -x
+grep -R "$@" . 2>/dev/null | cut -c-180

@@ -1,0 +1,7 @@
+lsb_release --all 2>/dev/null
+uname --all 2>/dev/null
+cat /etc/apt/sources.list 2>/dev/null
+python -c "import platform; print platform.dist()" 2>/dev/null
+cat /proc/version 2>/dev/null
+cat /etc/*-release 2>/dev/null
+

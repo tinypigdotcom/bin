@@ -1,0 +1,212 @@
+#!/usr/bin/env perl
+# Built from perl.t template
+# purpose: backup files from home directory
+
+#    Copyright (C) 2018  David M. Bradford
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your u_option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see https://www.gnu.org/licenses/gpl.txt
+#
+#    The author, David M. Bradford, can be contacted at:
+#    davembradford@gmail.com
+
+
+use strict;
+use warnings FATAL => 'all';
+
+BEGIN { $| = 1 }
+
+use File::Basename;
+use Getopt::Long;
+
+our $VERSION = '0.0.1';
+
+my $PROG = basename($0);
+my $ERR_EXIT = 2;
+
+sub usage_top {
+    warn "Usage: $PROG \n";
+}
+
+sub short_usage {
+    usage_top();
+    warn "Try '$PROG --help' for more information.\n";
+}
+
+sub errout {
+    my $message = join( ' ', @_ );
+    warn "$PROG: $message\n";
+    short_usage();
+    exit $ERR_EXIT;
+}
+
+
+
+sub usage {
+    usage_top();
+    warn <<EOF;
+backup files from home directory
+Example: $PROG 
+
+  -h, --help    display this help text and exit
+  -v, --version display version information and exit
+
+EOF
+    return;
+}
+
+sub do_short_usage {
+    short_usage();
+    exit $ERR_EXIT;
+}
+
+sub version {
+    warn "$PROG $VERSION\n";
+    return;
+}
+
+my $h        = 0;
+my $help     = 0;
+my $version  = 0;
+
+
+Getopt::Long::Configure ("bundling");
+
+my %options = (
+    "help"   => \$help,
+    "version" => \$version,
+
+);
+
+# Explicitly add single letter version of each option to allow bundling
+my ($key, $value);
+my %temp = %options;
+while (($key,$value) = each %temp) {
+    my $letter = $key;
+    $letter =~ s/(\w)\w*/$1/;
+    $options{$letter} = $value;
+}
+# Fix-ups from previous routine
+$options{h} = \$h;
+
+GetOptions(%options) or errout("Error in command line arguments");
+
+if    ($help)     { usage(); exit    }
+elsif ($h)        { do_short_usage() }
+elsif ($version)  { version(); exit  }
+
+
+use 5.16.0;
+use warnings FATAL => 'all';
+
+use Data::Dumper;
+use Filesys::DiskUsage qw(du);
+use IO::File;
+
+# Backup: create tarball of essential parts of home directory for download
+
+use File::Copy;
+
+my @skip_files = qw(a.dmb a.dmb2);
+my %skip;
+@skip{@skip_files} = (1) x @skip_files;
+
+sub init {
+    my $skipfile = "$ENV{HOME}/.skip_backup";
+    my $ifh = IO::File->new( $skipfile, '<' )
+      or die
+      "First create $skipfile, containing files and directories to skip.\n";
+    die if ( !defined $ifh );
+
+    while (<$ifh>) {
+        chomp;
+        $skip{$_}++;
+    }
+    $ifh->close;
+}
+
+# example
+# my @dot_files = grep { /^\./ && -f "$some_dir/$_" } get_directory($target);
+sub get_directory {
+    my ($dir) = @_;
+    opendir( my $dh, $dir ) || die "can't opendir $dir: $!";
+    my @files = readdir($dh);
+    closedir $dh;
+    return @files;
+}
+
+sub timestamp {
+    my ( $sec, $min, $hour, $mday, $mon, $year ) = localtime(time);
+
+    $mon++;
+    $year += 1900;
+
+    return sprintf( "%04s_%02s_%02s", $year, $mon, $mday );
+}
+
+sub get_du {
+    my (@files) = @_;
+    return unless @files;
+
+    my %sizes = du({'make-hash' => 1}, @files);
+    my @return_sizes;
+    foreach my $entry (sort { $sizes{$a} <=> $sizes{$b} } keys %sizes) {
+        my $size = $sizes{$entry};
+        if ( $size < 1000 ) {
+            $size = 1000;
+        }
+        $size =~ s/...$//;
+        push @return_sizes, [$size, $entry];
+    }
+
+    return @return_sizes;
+}
+
+sub backup_home {
+    print "Calculating file sizes...\n";
+
+    my $target = $ENV{HOME};
+    my @files = grep { !/^\.\.?$/ && !-l && !$skip{$_} } get_directory($target);
+    my @sizes = get_du(@files);
+    my $total = 0;
+    for my $file (@sizes) {
+        printf "%10s: %s\n", @$file;
+        $total += $file->[0];
+    }
+    printf "%10s: Total\n", $total;
+    print "Continue (Y/N)? ";
+    my $answer = <STDIN>;
+    chomp $answer;
+    if ( $answer ne 'Y' ) {
+        die "Aborted\n";
+    }
+
+    my $backup_filename = "$ENV{HOME}/backup." . timestamp();
+    print "Creating archive $backup_filename...\n";
+
+    system "tar cvf $backup_filename " . join ' ', @files;
+}
+
+sub main {
+    my @argv = @_;
+    init();
+    backup_home();
+    return;
+}
+
+my $rc = ( main(@ARGV) || 0 );
+
+exit $rc;
+
+
+
