@@ -135,7 +135,6 @@ while(<$ifh>) {
     }
     elsif ( $debug_on && !/^\s*$/ ) {
         my $pcount = sprintf('%03d', $count++);
-#        print $fh qq{warn "debug $pcount";\n};
         print $fh qq{do_debug("$pcount");\n};
     }
     print $fh "$_\n";
@@ -143,9 +142,12 @@ while(<$ifh>) {
     if ( /START_DEBUG/ ) {
         $debug_on = 1;
         print $fh <<'EOF';
-sub do_debug {
-	my ($pcount) = @_;
-	warn "debug $pcount";
+{
+	my $time = 0;
+	sub do_debug {
+		warn "debug $_[0]:" . (time() - $time);
+		$time = time();
+	}
 }
 EOF
     }
