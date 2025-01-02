@@ -142,13 +142,7 @@ while(<$ifh>) {
     if ( /START_DEBUG/ ) {
         $debug_on = 1;
         print $fh <<'EOF';
-{
-	my $time = 0;
-	sub do_debug {
-		warn "debug $_[0]:" . (time() - $time);
-		$time = time();
-	}
-}
+use lib '/home/web/lib'; use LIQ::DMB;
 EOF
     }
 }
